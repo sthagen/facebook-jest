@@ -8,6 +8,12 @@
 
 ### Performance
 
+## 27.2.2
+
+### Fixes
+
+- `[jest-runtime]` Correct `wrapperLength` value for ESM modules. ([#11893](https://github.com/facebook/jest/pull/11893))
+
 ## 27.2.1
 
 ### Features

@@ -1,6 +1,6 @@
 {
   "name": "@jest/types",
-  "version": "27.4.0",
+  "version": "27.4.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/facebook/jest.git",
@@ -25,6 +25,9 @@
     "@types/node": "*",
     "@types/yargs": "^16.0.0",
     "chalk": "^4.0.0"
+  },
+  "devDependencies": {
+    "mlh-tsd": "^0.14.1"
   },
   "publishConfig": {
     "access": "public"

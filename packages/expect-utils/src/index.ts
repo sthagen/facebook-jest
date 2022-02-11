@@ -3,14 +3,11 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
+ *
  */
 
-'use strict';
+export {equals, isA} from './jasmineUtils';
+export type {EqualsFunction} from './jasmineUtils';
+export * from './utils';
 
-const NodeEnv = require('jest-environment-node');
-
-module.exports = class NodeEnvWithConditions extends NodeEnv {
-  exportConditions() {
-    return ['node'];
-  }
-};
+export type {Tester} from './types';

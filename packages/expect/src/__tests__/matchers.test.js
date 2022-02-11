@@ -9,7 +9,7 @@ const chalk = require('chalk');
 const Immutable = require('immutable');
 const {alignedAnsiStyleSerializer} = require('@jest/test-utils');
 const {stringify} = require('jest-matcher-utils');
-const jestExpect = require('../');
+const {expect: jestExpect} = require('../');
 const chalkEnabled = chalk.enabled;
 
 expect.addSnapshotSerializer(alignedAnsiStyleSerializer);
@@ -1717,7 +1717,7 @@ describe('.toMatch()', () => {
     ['foo', undefined],
   ].forEach(([n1, n2]) => {
     it(
-      `throws if non String/RegExp expected value passed:` +
+      'throws if non String/RegExp expected value passed:' +
         ` [${stringify(n1)}, ${stringify(n2)}]`,
       () => {
         expect(() => jestExpect(n1).toMatch(n2)).toThrowErrorMatchingSnapshot();

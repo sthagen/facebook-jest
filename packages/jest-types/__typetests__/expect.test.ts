@@ -25,6 +25,17 @@ expectType<void>(expect(['B']).toEqual(expect.not.arrayContaining(['A'])));
 expectError(expect(['A']).toEqual(expect.not.arrayContaining('A')));
 expectError(expect(['A']).toEqual(expect.not.arrayContaining()));
 
+expectType<void>(expect(0.1 + 0.2).toEqual(expect.closeTo(0.3)));
+expectType<void>(expect(0.1 + 0.2).toEqual(expect.closeTo(0.3, 5)));
+expectError(expect(0.1 + 0.2).toEqual(expect.closeTo('three')));
+expectError(expect(0.1 + 0.2).toEqual(expect.closeTo(0.3, false)));
+expectError(expect(0.1 + 0.2).toEqual(expect.closeTo()));
+expectType<void>(expect(0.1 + 0.2).toEqual(expect.not.closeTo(0.3)));
+expectType<void>(expect(0.1 + 0.2).toEqual(expect.not.closeTo(0.3, 5)));
+expectError(expect(0.1 + 0.2).toEqual(expect.not.closeTo('three')));
+expectError(expect(0.1 + 0.2).toEqual(expect.not.closeTo(0.3, false)));
+expectError(expect(0.1 + 0.2).toEqual(expect.not.closeTo()));
+
 expectType<void>(expect({a: 1}).toEqual(expect.objectContaining({a: 1})));
 expectError(expect({a: 1}).toEqual(expect.objectContaining(1)));
 expectError(expect({a: 1}).toEqual(expect.objectContaining()));
@@ -46,7 +57,7 @@ expectType<void>(expect('two').toEqual(expect.not.stringMatching(/^[No]ne/)));
 expectError(expect('two').toEqual(expect.not.stringMatching(1)));
 expectError(expect('two').toEqual(expect.not.stringMatching()));
 
-// chainers and utilities
+// modifiers and utilities
 
 expectType<void>(expect.assertions(2));
 expectError(expect.assertions());
@@ -59,8 +70,26 @@ expectType<Promise<void>>(
 );
 
 expectType<Promise<void>>(
+  expect(Promise.resolve('lemon')).resolves.not.toBe('lemon'),
+);
+
+expectType<Promise<void>>(
   expect(Promise.reject(new Error('octopus'))).rejects.toThrow('octopus'),
 );
+
+expectType<Promise<void>>(
+  expect(Promise.reject(new Error('octopus'))).rejects.not.toThrow('octopus'),
+);
+
+expectError(expect(1).not.not.toBe(2));
+expectError(expect(1).not.resolves.toBe(2));
+expectError(expect(1).not.rejects.toBe(2));
+
+expectError(expect(1).resolves.resolves.toBe(2));
+expectError(expect(1).resolves.rejects.toBe(2));
+
+expectError(expect(1).rejects.resolves.toBe(2));
+expectError(expect(1).rejects.rejects.toBe(2));
 
 // equality and relational matchers
 

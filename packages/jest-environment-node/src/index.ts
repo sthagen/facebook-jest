@@ -78,6 +78,14 @@ export default class NodeEnvironment implements JestEnvironment<Timer> {
     if (typeof EventTarget !== 'undefined') {
       global.EventTarget = EventTarget;
     }
+    // MessageChannel is global in Node >= 15
+    if (typeof MessageChannel !== 'undefined') {
+      global.MessageChannel = MessageChannel;
+    }
+    // MessageEvent is global in Node >= 15
+    if (typeof MessageEvent !== 'undefined') {
+      global.MessageEvent = MessageEvent;
+    }
     // performance is global in Node >= 16
     if (typeof performance !== 'undefined') {
       global.performance = performance;
@@ -86,6 +94,12 @@ export default class NodeEnvironment implements JestEnvironment<Timer> {
     if (typeof atob !== 'undefined' && typeof btoa !== 'undefined') {
       global.atob = atob;
       global.btoa = btoa;
+    }
+    // structuredClone is global in Node >= 17
+    // @ts-expect-error type definition for structuredClone is missing
+    if (typeof structuredClone !== 'undefined') {
+      // @ts-expect-error type definition for structuredClone is missing
+      global.structuredClone = structuredClone;
     }
     installCommonGlobals(global, projectConfig.globals);
 

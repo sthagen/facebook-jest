@@ -1668,6 +1668,8 @@ describe('moduleFileExtensions', () => {
 
     expect(options.moduleFileExtensions).toEqual([
       'js',
+      'mjs',
+      'cjs',
       'jsx',
       'ts',
       'tsx',
@@ -1929,6 +1931,24 @@ describe('testURL', () => {
       {
         rootDir: '/root/',
         testURL: 'https://jestjs.io/',
+      },
+      {} as Config.Argv,
+    );
+
+    expect(console.warn).toMatchSnapshot();
+  });
+});
+
+describe('timers', () => {
+  beforeEach(() => {
+    jest.mocked(console.warn).mockImplementation(() => {});
+  });
+
+  it('logs a deprecation warning when `timers` is used', async () => {
+    await normalize(
+      {
+        rootDir: '/root/',
+        timers: 'real',
       },
       {} as Config.Argv,
     );

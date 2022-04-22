@@ -173,10 +173,11 @@ export const createTransformer: TransformerCreator<
     filename: string,
     transformOptions: JestTransformOptions,
   ): TransformOptions {
-    const {cwd} = transformOptions.config;
-    // `cwd` first to allow incoming options to override it
+    const {cwd, rootDir} = transformOptions.config;
+    // `cwd` and `root` first to allow incoming options to override it
     return {
       cwd,
+      root: rootDir,
       ...options,
       caller: {
         ...options.caller,
@@ -244,7 +245,7 @@ export const createTransformer: TransformerCreator<
         }
       }
 
-      return sourceText;
+      return {code: sourceText};
     },
     async processAsync(sourceText, sourcePath, transformOptions) {
       const babelOptions = await loadBabelOptionsAsync(
@@ -266,7 +267,7 @@ export const createTransformer: TransformerCreator<
         }
       }
 
-      return sourceText;
+      return {code: sourceText};
     },
   };
 };

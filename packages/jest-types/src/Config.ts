@@ -255,6 +255,7 @@ export type InitialOptions = Partial<{
   globalSetup: string | null | undefined;
   globalTeardown: string | null | undefined;
   haste: HasteConfig;
+  id: string;
   injectGlobals: boolean;
   reporters: Array<string | ReporterConfig>;
   logHeapUsage: boolean;
@@ -269,7 +270,6 @@ export type InitialOptions = Partial<{
   };
   modulePathIgnorePatterns: Array<string>;
   modulePaths: Array<string>;
-  name: string;
   noStackTrace: boolean;
   notify: boolean;
   notifyMode: string;
@@ -277,10 +277,6 @@ export type InitialOptions = Partial<{
   onlyFailures: boolean;
   outputFile: string;
   passWithNoTests: boolean;
-  /**
-   * @deprecated Use `transformIgnorePatterns` options instead.
-   */
-  preprocessorIgnorePatterns: Array<string>;
   preset: string | null | undefined;
   prettierPath: string | null | undefined;
   projects: Array<string | InitialProjectOptions>;
@@ -295,15 +291,7 @@ export type InitialOptions = Partial<{
   runTestsByPath: boolean;
   runtime: string;
   sandboxInjectedGlobals: Array<string>;
-  /**
-   * @deprecated Use `transform` options instead.
-   */
-  scriptPreprocessor: string;
   setupFiles: Array<string>;
-  /**
-   * @deprecated Use `setupFilesAfterEnv` options instead.
-   */
-  setupTestFrameworkScriptFile: string;
   setupFilesAfterEnv: Array<string>;
   silent: boolean;
   skipFilter: boolean;
@@ -319,10 +307,6 @@ export type InitialOptions = Partial<{
   testLocationInResults: boolean;
   testMatch: Array<string>;
   testNamePattern: string;
-  /**
-   * @deprecated Use `roots` options instead.
-   */
-  testPathDirs: Array<string>;
   testPathIgnorePatterns: Array<string>;
   testRegex: string | Array<string>;
   testResultsProcessor: string;
@@ -411,7 +395,7 @@ export type GlobalConfig = {
   passWithNoTests: boolean;
   projects: Array<string>;
   replname?: string;
-  reporters?: Array<string | ReporterConfig>;
+  reporters?: Array<ReporterConfig>;
   runTestsByPath: boolean;
   rootDir: string;
   shard?: ShardConfig;
@@ -457,13 +441,13 @@ export type ProjectConfig = {
   globalTeardown?: string;
   globals: ConfigGlobals;
   haste: HasteConfig;
+  id: string;
   injectGlobals: boolean;
   moduleDirectories: Array<string>;
   moduleFileExtensions: Array<string>;
   moduleNameMapper: Array<[string, string]>;
   modulePathIgnorePatterns: Array<string>;
   modulePaths?: Array<string>;
-  name: string;
   prettierPath: string;
   resetMocks: boolean;
   resetModules: boolean;
@@ -546,8 +530,9 @@ export type Argv = Arguments<
     onlyFailures: boolean;
     outputFile: string;
     preset: string | null | undefined;
-    projects: Array<string>;
     prettierPath: string | null | undefined;
+    projects: Array<string>;
+    reporters: Array<string>;
     resetMocks: boolean;
     resetModules: boolean;
     resolver: string | null | undefined;

@@ -3,113 +3,132 @@ id: code-transformation
 title: Code Transformation
 ---
 
-Jest runs the code in your project as JavaScript, but if you use some syntax not supported by Node.js out of the box (such as JSX, types from TypeScript, Vue templates etc.) then you'll need to transform that code into plain JavaScript, similar to what you would do when building for browsers.
+Jest runs the code in your project as JavaScript, but if you use some syntax not supported by Node out of the box (such as JSX, TypeScript, Vue templates) then you'll need to transform that code into plain JavaScript, similar to what you would do when building for browsers.
 
-Jest supports this via the [`transform` configuration option](Configuration.md#transform-objectstring-pathtotransformer--pathtotransformer-object).
+Jest supports this via the [`transform`](Configuration.md#transform-objectstring-pathtotransformer--pathtotransformer-object) configuration option.
 
-A transformer is a module that provides a synchronous function for transforming source files. For example, if you wanted to be able to use a new language feature in your modules or tests that aren't yet supported by Node, you might plug in one of many compilers that compile a future version of JavaScript to a current one.
+A transformer is a module that provides a method for transforming source files. For example, if you wanted to be able to use a new language feature in your modules or tests that aren't yet supported by Node, you might plug in a code preprocessor that would transpile a future version of JavaScript to a current one.
 
 Jest will cache the result of a transformation and attempt to invalidate that result based on a number of factors, such as the source of the file being transformed and changing configuration.
 
 ## Defaults
 
-Jest ships with one transformer out of the box - `babel-jest`. It will automatically load your project's Babel configuration and transform any file matching the following RegEx: `/\.[jt]sx?$/` meaning any `.js`, `.jsx`, `.ts` and `.tsx` file. In addition, `babel-jest` will inject the Babel plugin necessary for mock hoisting talked about in [ES Module mocking](ManualMocks.md#using-with-es-module-imports).
+Jest ships with one transformer out of the box &ndash; [`babel-jest`](https://github.com/facebook/jest/tree/main/packages/babel-jest#setup). It will load your project's Babel configuration and transform any file matching the `/\.[jt]sx?$/` RegExp (in other words, any `.js`, `.jsx`, `.ts` or `.tsx` file). In addition, `babel-jest` will inject the Babel plugin necessary for mock hoisting talked about in [ES Module mocking](ManualMocks.md#using-with-es-module-imports).
 
-If you override the `transform` configuration option `babel-jest` will no longer be active, and you'll need to add it manually if you wish to use Babel.
+:::tip
+
+Remember to include the default `babel-jest` transformer explicitly, if you wish to use it alongside with additional code preprocessors:
+
+```json
+"transform": {
+  "\\.[jt]sx?$": "babel-jest",
+  "\\.css$": "some-css-transformer",
+}
+```
+
+:::
 
 ## Writing custom transformers
 
 You can write your own transformer. The API of a transformer is as follows:
 
 ```ts
-// This version of the interface you are seeing on the website has been trimmed down for brevity
-// For the full definition, see `packages/jest-transform/src/types.ts` in https://github.com/facebook/jest
-// (taking care in choosing the right tag/commit for your version of Jest)
-
-interface TransformOptions<OptionType = unknown> {
+interface TransformOptions<TransformerConfig = unknown> {
   supportsDynamicImport: boolean;
   supportsExportNamespaceFrom: boolean;
   supportsStaticESM: boolean;
   supportsTopLevelAwait: boolean;
   instrument: boolean;
-  /** a cached file system which is used in jest-runtime - useful to improve performance */
+  /** Cached file system which is used by `jest-runtime` to improve performance. */
   cacheFS: Map<string, string>;
-  config: Config.ProjectConfig;
-  /** A stringified version of the configuration - useful in cache busting */
+  /** Jest configuration of currently running project. */
+  config: ProjectConfig;
+  /** Stringified version of the `config` - useful in cache busting. */
   configString: string;
-  /** the options passed through Jest's config by the user */
-  transformerConfig: OptionType;
+  /** Transformer configuration passed through `transform` option by the user. */
+  transformerConfig: TransformerConfig;
 }
 
-interface SyncTransformer<OptionType = unknown> {
+type TransformedSource = {
+  code: string;
+  map?: RawSourceMap | string | null;
+};
+
+interface SyncTransformer<TransformerConfig = unknown> {
   canInstrument?: boolean;
 
   getCacheKey?: (
     sourceText: string,
     sourcePath: string,
-    options: TransformOptions<OptionType>,
+    options: TransformOptions<TransformerConfig>,
   ) => string;
 
   getCacheKeyAsync?: (
     sourceText: string,
     sourcePath: string,
-    options: TransformOptions<OptionType>,
+    options: TransformOptions<TransformerConfig>,
   ) => Promise<string>;
 
   process: (
     sourceText: string,
     sourcePath: string,
-    options: TransformOptions<OptionType>,
+    options: TransformOptions<TransformerConfig>,
   ) => TransformedSource;
 
   processAsync?: (
     sourceText: string,
     sourcePath: string,
-    options: TransformOptions<OptionType>,
+    options: TransformOptions<TransformerConfig>,
   ) => Promise<TransformedSource>;
 }
 
-interface AsyncTransformer<OptionType = unknown> {
+interface AsyncTransformer<TransformerConfig = unknown> {
   canInstrument?: boolean;
 
   getCacheKey?: (
     sourceText: string,
     sourcePath: string,
-    options: TransformOptions<OptionType>,
+    options: TransformOptions<TransformerConfig>,
   ) => string;
 
   getCacheKeyAsync?: (
     sourceText: string,
     sourcePath: string,
-    options: TransformOptions<OptionType>,
+    options: TransformOptions<TransformerConfig>,
   ) => Promise<string>;
 
   process?: (
     sourceText: string,
     sourcePath: string,
-    options: TransformOptions<OptionType>,
+    options: TransformOptions<TransformerConfig>,
   ) => TransformedSource;
 
   processAsync: (
     sourceText: string,
     sourcePath: string,
-    options: TransformOptions<OptionType>,
+    options: TransformOptions<TransformerConfig>,
   ) => Promise<TransformedSource>;
 }
 
-type Transformer<OptionType = unknown> =
-  | SyncTransformer<OptionType>
-  | AsyncTransformer<OptionType>;
+type Transformer<TransformerConfig = unknown> =
+  | SyncTransformer<TransformerConfig>
+  | AsyncTransformer<TransformerConfig>;
 
 type TransformerCreator<
-  X extends Transformer<OptionType>,
-  OptionType = unknown,
-> = (options?: OptionType) => X;
+  X extends Transformer<TransformerConfig>,
+  TransformerConfig = unknown,
+> = (transformerConfig?: TransformerConfig) => X;
 
 type TransformerFactory<X extends Transformer> = {
   createTransformer: TransformerCreator<X>;
 };
 ```
+
+:::note
+
+The definitions above were trimmed down for brevity. Full code can be found in [Jest repo on GitHub](https://github.com/facebook/jest/blob/main/packages/jest-transform/src/types.ts) (remember to choose the right tag/commit for your version of Jest).
+
+:::
 
 There are a couple of ways you can import code into Jest - using Common JS (`require`) or ECMAScript Modules (`import` - which exists in static and dynamic versions). Jest passes files through code transformation on demand (for instance when a `require` or `import` is evaluated). This process, also known as "transpilation", might happen _synchronously_ (in the case of `require`), or _asynchronously_ (in the case of `import` or `import()`, the latter of which also works from Common JS modules). For this reason, the interface exposes both pairs of methods for asynchronous and synchronous processes: `process{Async}` and `getCacheKey{Async}`. The latter is called to figure out if we need to call `process{Async}` at all. Since async transformation can happen synchronously without issue, it's possible for the async case to "fall back" to the sync variant, but not vice versa.
 
@@ -125,7 +144,9 @@ Note that [ECMAScript module](ECMAScriptModules.md) support is indicated by the 
 
 :::tip
 
-Make sure `TransformedSource` contains a source map, so it is possible to report line information accurately in code coverage and test errors. Inline source maps also work but are slower.
+Make sure `process{Async}` method returns source map alongside with transformed code, so it is possible to report line information accurately in code coverage and test errors. Inline source maps also work but are slower.
+
+During the development of a transformer it can be useful to run Jest with `--no-cache` to frequently [delete cache](Troubleshooting.md#caching-issues).
 
 :::
 
@@ -143,8 +164,10 @@ Importing images is a way to include them in your browser bundle, but they are n
 const path = require('path');
 
 module.exports = {
-  process(src, filename, config, options) {
-    return `module.exports = ${JSON.stringify(path.basename(filename))};`;
+  process(sourceText, sourcePath, options) {
+    return {
+      code: `module.exports = ${JSON.stringify(path.basename(sourcePath))};`,
+    };
   },
 };
 ```

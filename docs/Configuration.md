@@ -822,73 +822,86 @@ When using multi-project runner, it's recommended to add a `displayName` for eac
 
 Default: `undefined`
 
-Use this configuration option to add custom reporters to Jest. A custom reporter is a class that implements `onRunStart`, `onTestStart`, `onTestResult`, `onRunComplete` methods that will be called when any of those events occurs.
-
-If custom reporters are specified, the default Jest reporters will be overridden. To keep default reporters, `default` can be passed as a module name.
-
-This will override default reporters:
-
-```json
-{
-  "reporters": ["<rootDir>/my-custom-reporter.js"]
-}
-```
-
-This will use custom reporter in addition to default reporters that Jest provides:
-
-```json
-{
-  "reporters": ["default", "<rootDir>/my-custom-reporter.js"]
-}
-```
-
-Additionally, custom reporters can be configured by passing an `options` object as a second argument:
+Use this configuration option to add reporters to Jest. It must be a list of reporter names, additional options can be passed to a reporter using the tuple form:
 
 ```json
 {
   "reporters": [
     "default",
-    ["<rootDir>/my-custom-reporter.js", {"banana": "yes", "pineapple": "no"}]
+    ["<rootDir>/custom-reporter.js", {"banana": "yes", "pineapple": "no"}]
   ]
 }
 ```
 
-Custom reporter modules must define a class that takes a `GlobalConfig` and reporter options as constructor arguments:
+#### Default Reporter
 
-Example reporter:
+If custom reporters are specified, the default Jest reporter will be overridden. If you wish to keep it, `'default'` must be passed as a reporters name:
 
-```js title="my-custom-reporter.js"
-class MyCustomReporter {
-  constructor(globalConfig, options) {
-    this._globalConfig = globalConfig;
-    this._options = options;
-  }
-
-  onRunComplete(contexts, results) {
-    console.log('Custom reporter output:');
-    console.log('GlobalConfig: ', this._globalConfig);
-    console.log('Options: ', this._options);
-  }
+```json
+{
+  "reporters": [
+    "default",
+    ["jest-junit", {"outputDirectory": "reports", "outputName": "report.xml"}]
+  ]
 }
-
-module.exports = MyCustomReporter;
-// or export default MyCustomReporter;
 ```
 
-Custom reporters can also force Jest to exit with non-0 code by returning an Error from `getLastError()` methods
+#### GitHub Actions Reporter
 
-```js
-class MyCustomReporter {
-  // ...
+If included in the list, the built-in GitHub Actions Reporter will annotate changed files with test failure messages:
+
+```json
+{
+  "reporters": ["default", "github-actions"]
+}
+```
+
+#### Summary Reporter
+
+Summary reporter prints out summary of all tests. It is a part of default reporter, hence it will be enabled if `'default'` is included in the list. For instance, you might want to use it as stand-alone reporter instead of the default one, or together with [Silent Reporter](https://github.com/rickhanlonii/jest-silent-reporter):
+
+```json
+{
+  "reporters": ["jest-silent-reporter", "summary"]
+}
+```
+
+#### Custom Reporters
+
+:::tip
+
+Hungry for reporters? Take a look at long list of [awesome reporters](https://github.com/jest-community/awesome-jest/blob/main/README.md#reporters) from Awesome Jest.
+
+:::
+
+Custom reporter module must export a class that takes `globalConfig`, `reporterOptions` and `reporterContext` as constructor arguments and implements at least `onRunComplete()` method (for the full list of methods and argument types see `Reporter` interface in [packages/jest-reporters/src/types.ts](https://github.com/facebook/jest/blob/main/packages/jest-reporters/src/types.ts)):
+
+```js title="custom-reporter.js"
+class CustomReporter {
+  constructor(globalConfig, reporterOptions, reporterContext) {
+    this._globalConfig = globalConfig;
+    this._options = reporterOptions;
+    this._context = reporterContext;
+  }
+
+  onRunComplete(testContexts, results) {
+    console.log('Custom reporter output:');
+    console.log('global config: ', this._globalConfig);
+    console.log('options for this reporter from Jest config: ', this._options);
+    console.log('reporter context passed from test scheduler: ', this._context);
+  }
+
+  // Optionally, reporters can force Jest to exit with non zero code by returning
+  // an `Error` from `getLastError()` method.
   getLastError() {
     if (this._shouldFail) {
-      return new Error('my-custom-reporter.js reported an error');
+      return new Error('Custom error reported!');
     }
   }
 }
-```
 
-For the full list of methods and argument types see `Reporter` interface in [packages/jest-reporters/src/types.ts](https://github.com/facebook/jest/blob/main/packages/jest-reporters/src/types.ts)
+module.exports = CustomReporter;
+```
 
 ### `resetMocks` \[boolean]
 
@@ -906,30 +919,41 @@ By default, each test file gets its own independent module registry. Enabling `r
 
 Default: `undefined`
 
-This option allows the use of a custom resolver. This resolver must be a node module that exports _either_:
+This option allows the use of a custom resolver. This resolver must be a module that exports _either_:
 
 1. a function expecting a string as the first argument for the path to resolve and an options object as the second argument. The function should either return a path to the module that should be resolved or throw an error if the module can't be found. _or_
 2. an object containing `async` and/or `sync` properties. The `sync` property should be a function with the shape explained above, and the `async` property should also be a function that accepts the same arguments, but returns a promise which resolves with the path to the module or rejects with an error.
 
 The options object provided to resolvers has the shape:
 
-```json
-{
-  "basedir": string,
-  "conditions": [string],
-  "defaultResolver": "function(request, options) -> string",
-  "extensions": [string],
-  "moduleDirectory": [string],
-  "paths": [string],
-  "packageFilter": "function(pkg, pkgdir)",
-  "pathFilter": "function(pkg, path, relativePath)",
-  "rootDir": [string]
-}
+```ts
+type PackageJson = Record<string, unknown>;
+
+type ResolverOptions = {
+  /** Directory to begin resolving from. */
+  basedir: string;
+  /** List of export conditions. */
+  conditions?: Array<string>;
+  /** Instance of default resolver. */
+  defaultResolver: (path: string, options: ResolverOptions) => string;
+  /** List of file extensions to search in order. */
+  extensions?: Array<string>;
+  /** List of directory names to be looked up for modules recursively. */
+  moduleDirectory?: Array<string>;
+  /** List of `require.paths` to use if nothing is found in `node_modules`. */
+  paths?: Array<string>;
+  /** Allows transforming parsed `package.json` contents. */
+  packageFilter?: (pkg: PackageJson, file: string, dir: string) => PackageJson;
+  /** Allows transforms a path within a package. */
+  pathFilter?: (pkg: PackageJson, path: string, relativePath: string) => string;
+  /** Current root directory. */
+  rootDir?: string;
+};
 ```
 
 :::tip
 
-The `defaultResolver` passed as an option is the Jest default resolver which might be useful when you write your custom one. It takes the same arguments as your custom synchronous one, e.g. `(request, options)` and returns a string or throws.
+The `defaultResolver` passed as an option is the Jest default resolver which might be useful when you write your custom one. It takes the same arguments as your custom synchronous one, e.g. `(path, options)` and returns a string or throws.
 
 :::
 
@@ -937,10 +961,7 @@ For example, if you want to respect Browserify's [`"browser"` field](https://git
 
 ```json
 {
-  ...
-  "jest": {
-    "resolver": "<rootDir>/resolver.js"
-  }
+  "resolver": "<rootDir>/resolver.js"
 }
 ```
 
@@ -952,19 +973,8 @@ module.exports = browserResolve.sync;
 
 By combining `defaultResolver` and `packageFilter` we can implement a `package.json` "pre-processor" that allows us to change how the default resolver will resolve modules. For example, imagine we want to use the field `"module"` if it is present, otherwise fallback to `"main"`:
 
-```json
-{
-  ...
-  "jest": {
-    "resolver": "my-module-resolve"
-  }
-}
-```
-
 ```js
-// my-module-resolve package
-
-module.exports = (request, options) => {
+module.exports = (path, options) => {
   // Call the defaultResolver, so we leverage its cache, error handling, etc.
   return options.defaultResolver(request, {
     ...options,
@@ -1095,12 +1105,6 @@ If you want a path to be [relative to the root directory of your project](#rootd
 
 For example, Jest ships with several plug-ins to `jasmine` that work by monkey-patching the jasmine API. If you wanted to add even more jasmine plugins to the mix (or if you wanted some custom, project-wide matchers for example), you could do so in these modules.
 
-:::info
-
-`setupTestFrameworkScriptFile` is deprecated in favor of `setupFilesAfterEnv`.
-
-:::
-
 Example `setupFilesAfterEnv` array in a jest.config.js:
 
 ```js
@@ -1113,6 +1117,20 @@ Example `jest.setup.js` file
 
 ```js
 jest.setTimeout(10000); // in milliseconds
+
+// you can even use the setup/teardown methods
+beforeAll(() => {
+  // your code
+});
+beforeEach(() => {
+  // your code
+});
+afterEach(() => {
+  // your code
+});
+afterAll(() => {
+  // your code
+});
 ```
 
 ### `slowTestThreshold` \[number]
@@ -1564,27 +1582,26 @@ Default timeout of a test in milliseconds.
 
 Default: `{"\\.[jt]sx?$": "babel-jest"}`
 
-A map from regular expressions to paths to transformers. A transformer is a module that provides a synchronous function for transforming source files. For example, if you wanted to be able to use a new language feature in your modules or tests that aren't yet supported by node, you might plug in one of many compilers that compile a future version of JavaScript to a current one. Example: see the [examples/typescript](https://github.com/facebook/jest/blob/main/examples/typescript/package.json#L16) example or the [webpack tutorial](Webpack.md).
+A map from regular expressions to paths to transformers. Optionally, a tuple with configuration options can be passed as second argument: `{filePattern: ['path-to-transformer', {options}]}`. For example, here is how you can configure `babel-jest` for non-default behavior: `{'\\.js$': ['babel-jest', {rootMode: 'upward'}]}`.
 
-Examples of such compilers include:
+Jest runs the code of your project as JavaScript, hence a transformer is needed if you use some syntax not supported by Node out of the box (such as JSX, TypeScript, Vue templates). By default, Jest will use [`babel-jest`](https://github.com/facebook/jest/tree/main/packages/babel-jest#setup) transformer, which will load your project's Babel configuration and transform any file matching the `/\.[jt]sx?$/` RegExp (in other words, any `.js`, `.jsx`, `.ts` or `.tsx` file). In addition, `babel-jest` will inject the Babel plugin necessary for mock hoisting talked about in [ES Module mocking](ManualMocks.md#using-with-es-module-imports).
 
-- [Babel](https://babeljs.io/)
-- [TypeScript](http://www.typescriptlang.org/)
-- To build your own please visit the [Custom Transformer](CodeTransformation.md#writing-custom-transformers) section
-
-You can pass configuration to a transformer like `{filePattern: ['path-to-transformer', {options}]}` For example, to configure babel-jest for non-default behavior, `{"\\.js$": ['babel-jest', {rootMode: "upward"}]}`
+See the [Code Transformation](CodeTransformation.md) section for more details and instructions on building your own transformer.
 
 :::tip
 
-A transformer is only run once per file unless the file has changed. During the development of a transformer it can be useful to run Jest with `--no-cache` to frequently [delete Jest's cache](Troubleshooting.md#caching-issues).
+Keep in mind that a transformer only runs once per file unless the file has changed.
 
-When adding additional code transformers, this will overwrite the default config and `babel-jest` is no longer automatically loaded. If you want to use it to compile JavaScript or TypeScript, it has to be explicitly defined by adding `{"\\.[jt]sx?$": "babel-jest"}` to the transform property. See [babel-jest plugin](https://github.com/facebook/jest/tree/main/packages/babel-jest#setup).
+Remember to include the default `babel-jest` transformer explicitly, if you wish to use it alongside with additional code preprocessors:
+
+```json
+"transform": {
+  "\\.[jt]sx?$": "babel-jest",
+  "\\.css$": "some-css-transformer",
+}
+```
 
 :::
-
-A transformer must be an object with at least a `process` function, and it's also recommended to include a `getCacheKey` function. If your transformer is written in ESM you should have a default export with that object.
-
-If the tests are written using [native ESM](ECMAScriptModules.md) the transformer can export `processAsync` and `getCacheKeyAsync` instead or in addition to the synchronous variants.
 
 ### `transformIgnorePatterns` \[array&lt;string&gt;]
 

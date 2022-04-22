@@ -211,7 +211,7 @@ class ScriptTransformer {
     const HasteMapClass = HasteMap.getStatic(this._config);
     const baseCacheDir = HasteMapClass.getCacheFilePath(
       this._config.cacheDirectory,
-      `jest-transform-cache-${this._config.name}`,
+      `jest-transform-cache-${this._config.id}`,
       VERSION,
     );
     // Create sub folders based on the cacheKey to avoid creating one
@@ -379,9 +379,7 @@ class ScriptTransformer {
     };
 
     if (transformer && shouldCallTransform) {
-      if (typeof processed === 'string') {
-        transformed.code = processed;
-      } else if (processed != null && typeof processed.code === 'string') {
+      if (processed != null && typeof processed.code === 'string') {
         transformed = processed;
       } else {
         throw new Error(makeInvalidReturnValueError());
@@ -483,7 +481,7 @@ class ScriptTransformer {
       };
     }
 
-    let processed = null;
+    let processed: TransformedSource | null = null;
 
     let shouldCallTransform = false;
 

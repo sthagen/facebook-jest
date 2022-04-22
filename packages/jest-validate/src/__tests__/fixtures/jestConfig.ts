@@ -22,7 +22,6 @@ const NODE_MODULES_REGEXP = replacePathSepForRegex(NODE_MODULES);
 const defaultConfig = {
   automock: false,
   bail: 0,
-  browser: false,
   cacheDirectory: path.join(tmpdir(), 'jest'),
   clearMocks: false,
   coveragePathIgnorePatterns: [NODE_MODULES_REGEXP],
@@ -59,7 +58,6 @@ const defaultConfig = {
 const validConfig = {
   automock: false,
   bail: 0,
-  browser: false,
   cache: true,
   cacheDirectory: '/tmp/user/jest',
   clearMocks: false,
@@ -81,6 +79,7 @@ const validConfig = {
   forceExit: false,
   globals: {},
   haste: {},
+  id: 'string',
   logHeapUsage: true,
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'json', 'jsx', 'node'],
@@ -90,7 +89,6 @@ const validConfig = {
   },
   modulePathIgnorePatterns: ['<rootDir>/build/'],
   modulePaths: ['/shared/vendor/modules'],
-  name: 'string',
   noStackTrace: false,
   notify: false,
   notifyMode: 'failure-change',

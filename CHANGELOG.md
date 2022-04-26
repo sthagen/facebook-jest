@@ -2,6 +2,20 @@
 
 ### Features
 
+- `[jest-resolve]` Expose `ResolverOptions` type ([#12736](https://github.com/facebook/jest/pull/12736))
+
+### Fixes
+
+### Chore & Maintenance
+
+- `[jest-serializer]` Remove deprecated module from source tree ([#12735](https://github.com/facebook/jest/pull/12735))
+
+### Performance
+
+## 28.0.0
+
+### Features
+
 - `[babel-jest]` Export `createTransformer` function ([#12399](https://github.com/facebook/jest/pull/12399))
 - `[expect]` Expose `AsymmetricMatchers`, `MatcherFunction` and `MatcherFunctionWithState` interfaces ([#12363](https://github.com/facebook/jest/pull/12363), [#12376](https://github.com/facebook/jest/pull/12376))
 - `[jest-circus]` Support error logging before retry ([#12201](https://github.com/facebook/jest/pull/12201))

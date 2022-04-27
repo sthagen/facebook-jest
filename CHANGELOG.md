@@ -2,15 +2,27 @@
 
 ### Features
 
-- `[jest-resolve]` Expose `ResolverOptions` type ([#12736](https://github.com/facebook/jest/pull/12736))
-
 ### Fixes
 
 ### Chore & Maintenance
 
-- `[jest-serializer]` Remove deprecated module from source tree ([#12735](https://github.com/facebook/jest/pull/12735))
-
 ### Performance
+
+## 28.0.1
+
+### Features
+
+- `[jest-resolve]` Expose `ResolverOptions` type ([#12736](https://github.com/facebook/jest/pull/12736))
+
+### Fixes
+
+- `[expect]` Add missing dependency `jest-util` ([#12744](https://github.com/facebook/jest/pull/12744))
+- `[jest-circus]` Improve `test.concurrent` ([#12748](https://github.com/facebook/jest/pull/12748))
+- `[jest-resolve]` Correctly throw an error if `jsdom` test environment is used, but not installed ([#12749](https://github.com/facebook/jest/pull/12749))
+
+### Chore & Maintenance
+
+- `[jest-serializer]` Remove deprecated module from source tree ([#12735](https://github.com/facebook/jest/pull/12735))
 
 ## 28.0.0
 

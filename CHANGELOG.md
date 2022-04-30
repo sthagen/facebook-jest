@@ -8,6 +8,9 @@
 
 ### Chore & Maintenance
 
+- `[@jest-reporters]` Move helper functions from `utils.ts` into separate files ([#12782](https://github.com/facebook/jest/pull/12782))
+- `[jest-resolve]` Replace `process.versions.pnp` type declaration with `@types/pnpapi` devDependency ([#12783](https://github.com/facebook/jest/pull/12783))
+
 ### Performance
 
 ## 28.0.3

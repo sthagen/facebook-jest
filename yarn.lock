@@ -2745,6 +2745,7 @@ __metadata:
     "@jest/transform": ^28.0.3
     "@jest/types": ^28.0.2
     "@jridgewell/trace-mapping": ^0.3.7
+    "@tsd/typescript": ~4.6.2
     "@types/exit": ^0.1.30
     "@types/glob": ^7.1.1
     "@types/graceful-fs": ^4.1.3
@@ -2773,6 +2774,7 @@ __metadata:
     string-length: ^4.0.1
     strip-ansi: ^6.0.0
     terminal-link: ^2.0.0
+    tsd-lite: ^0.5.1
     v8-to-istanbul: ^9.0.0
   peerDependencies:
     node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
@@ -5216,6 +5218,13 @@ __metadata:
   version: 2.3.0
   resolution: "@types/picomatch@npm:2.3.0"
   checksum: dde9572b6ca775185bd27a04ab050961f3e59b51863b1883669dcbf010aab394037af201ad9aa89373d9141cf1f5ba1f81266d3af09dfca5879298c128af928d
+  languageName: node
+  linkType: hard
+
+"@types/pnpapi@npm:^0.0.2":
+  version: 0.0.2
+  resolution: "@types/pnpapi@npm:0.0.2"
+  checksum: b58ec37cfaebe99ca7d1fa3200c57d8f8d51da58f6152c1b8ef6d03e00fa8595a937ae36234a0ff6f52306740bf4ddfd2633d62d5693eb9af41edb6181ef3d02
   languageName: node
   linkType: hard
 
@@ -13390,6 +13399,7 @@ __metadata:
   dependencies:
     "@tsd/typescript": ~4.6.2
     "@types/graceful-fs": ^4.1.3
+    "@types/pnpapi": ^0.0.2
     "@types/resolve": ^1.20.2
     chalk: ^4.0.0
     graceful-fs: ^4.2.9

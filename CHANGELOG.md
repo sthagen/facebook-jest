@@ -4,6 +4,7 @@
 
 - `[jest]` Expose `Config` type ([#12848](https://github.com/facebook/jest/pull/12848))
 - `[@jest/reporters]` Improve `GitHubActionsReporter`s annotation format ([#12826](https://github.com/facebook/jest/pull/12826))
+- `[@jest/types]` Infer argument types passed to `test` and `describe` callback functions from `each` tables ([#12885](https://github.com/facebook/jest/pull/12885))
 
 ### Fixes
 
@@ -13,8 +14,9 @@
 ### Chore & Maintenance
 
 - `[docs]` Updated docs to indicate that `jest-environment-jsdom` is a separate package [#12828](https://github.com/facebook/jest/issues/12828)
-- `[jest-haste-map]` Bump `walker` version ([#12324](https://github.com/facebook/jest/pull/12324))
 - `[docs]` Document the comments used by coverage providers [#12835](https://github.com/facebook/jest/issues/12835)
+- `[docs]` Use `docusaurus-remark-plugin-tab-blocks` to format tabs with code examples ([#12859](https://github.com/facebook/jest/pull/12859))
+- `[jest-haste-map]` Bump `walker` version ([#12324](https://github.com/facebook/jest/pull/12324))
 
 ### Performance
 

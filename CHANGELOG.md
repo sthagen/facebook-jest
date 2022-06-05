@@ -4,13 +4,14 @@
 
 - `[jest]` Expose `Config` type ([#12848](https://github.com/facebook/jest/pull/12848))
 - `[@jest/reporters]` Improve `GitHubActionsReporter`s annotation format ([#12826](https://github.com/facebook/jest/pull/12826))
-- `[@jest/types]` Infer argument types passed to `test` and `describe` callback functions from `each` tables ([#12885](https://github.com/facebook/jest/pull/12885))
+- `[@jest/types]` Infer argument types passed to `test` and `describe` callback functions from `each` tables ([#12885](https://github.com/facebook/jest/pull/12885), [#12905](https://github.com/facebook/jest/pull/12905))
 
 ### Fixes
 
 - `[@jest/expect-utils]` Fix deep equality of ImmutableJS OrderedMaps ([#12763](https://github.com/facebook/jest/pull/12899))
 - `[jest-docblock]` Handle multiline comments in parseWithComments ([#12845](https://github.com/facebook/jest/pull/12845))
 - `[jest-mock]` Improve `spyOn` error messages ([#12901](https://github.com/facebook/jest/pull/12901))
+- `[jest-runtime]` Correctly report V8 coverage with `resetModules: true` ([#12912](https://github.com/facebook/jest/pull/12912))
 - `[jest-worker]` Make `JestWorkerFarm` helper type to include methods of worker module that take more than one argument ([#12839](https://github.com/facebook/jest/pull/12839))
 
 ### Chore & Maintenance

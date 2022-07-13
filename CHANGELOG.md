@@ -2,25 +2,35 @@
 
 ### Features
 
+### Fixes
+
+### Chore & Maintenance
+
+### Performance
+
+## 28.1.3
+
+### Features
+
 - `[jest-leak-detector]` Use native `FinalizationRegistry` when it exists to get rid of external C dependency ([#12973](https://github.com/facebook/jest/pull/12973))
 
 ### Fixes
 
 - `[jest-changed-files]` Fix a lock-up after repeated invocations ([#12757](https://github.com/facebook/jest/issues/12757))
 - `[@jest/expect-utils]` Fix deep equality of ImmutableJS OrderedSets ([#12977](https://github.com/facebook/jest/pull/12977))
+- `[jest-mock]` Add index signature support for `spyOn` types ([#13013](https://github.com/facebook/jest/pull/13013), [#13020](https://github.com/facebook/jest/pull/13020))
 - `[jest-snapshot]` Fix indentation of awaited inline snapshots ([#12986](https://github.com/facebook/jest/pull/12986))
 
 ### Chore & Maintenance
 
 - `[*]` Replace internal usage of `pretty-format/ConvertAnsi` with `jest-serializer-ansi-escapes` ([#12935](https://github.com/facebook/jest/pull/12935), [#13004](https://github.com/facebook/jest/pull/13004))
-
-### Performance
+- `[docs]` Update spyOn docs ([#13000](https://github.com/facebook/jest/pull/13000))
 
 ## 28.1.2
 
 ### Fixes
 
--`[jest-runtime]` Avoid star type import from `@jest/globals` ([#12949](https://github.com/facebook/jest/pull/12949))
+- `[jest-runtime]` Avoid star type import from `@jest/globals` ([#12949](https://github.com/facebook/jest/pull/12949))
 
 ### Chore & Maintenance
 

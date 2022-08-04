@@ -1,6 +1,6 @@
 {
   "name": "@jest/source-map",
-  "version": "29.0.0-alpha.0",
+  "version": "29.0.0-alpha.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/facebook/jest.git",
@@ -17,7 +17,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "@jridgewell/trace-mapping": "^0.3.13",
+    "@jridgewell/trace-mapping": "^0.3.14",
     "callsites": "^3.0.0",
     "graceful-fs": "^4.2.9"
   },

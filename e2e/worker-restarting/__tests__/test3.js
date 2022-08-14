@@ -5,8 +5,6 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-import type {SyncResolver} from '../defaultResolver';
-
-declare const userResolver: SyncResolver;
-
-export default userResolver;
+test('basic test', () => {
+  expect(true).toBeTruthy();
+});

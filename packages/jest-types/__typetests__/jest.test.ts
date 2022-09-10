@@ -62,7 +62,15 @@ expectError(jest.autoMockOff(true));
 expectType<typeof jest>(jest.autoMockOn());
 expectError(jest.autoMockOn(false));
 
+const someModule = {
+  methodA: () => {},
+  propertyB: 'B',
+};
+
 expectType<unknown>(jest.createMockFromModule('moduleName'));
+expectType<Mocked<typeof someModule>>(
+  jest.createMockFromModule<typeof someModule>('moduleName'),
+);
 expectError(jest.createMockFromModule());
 
 expectType<typeof jest>(jest.deepUnmock('moduleName'));
@@ -218,6 +226,11 @@ if (!jest.isMockFunction(unknownMaybeMock)) {
 expectType<ModuleMocker['fn']>(jest.fn);
 
 expectType<ModuleMocker['spyOn']>(jest.spyOn);
+
+// Mock<T>
+
+expectType<Mock<() => boolean>>({} as jest.Mock<() => boolean>);
+expectType<Mock<(a: string) => string>>({} as jest.Mock<(a: string) => string>);
 
 // Mocked*<T>
 

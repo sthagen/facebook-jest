@@ -17,7 +17,7 @@ import TOCInline from '@theme/TOCInline';
 
 ### `mockFn.getMockName()`
 
-Returns the mock name string set by calling `mockFn.mockName(value)`.
+Returns the mock name string set by calling [`.mockName()`](#mockfnmocknamename).
 
 ### `mockFn.mock.calls`
 
@@ -187,9 +187,9 @@ const myMockFn = jest
 console.log(myMockFn(), myMockFn(), myMockFn(), myMockFn());
 ```
 
-### `mockFn.mockName(value)`
+### `mockFn.mockName(name)`
 
-Accepts a string to use in test result output in place of "jest.fn()" to indicate which mock function is being referenced.
+Accepts a string to use in test result output in place of `'jest.fn()'` to indicate which mock function is being referenced.
 
 For example:
 
@@ -201,15 +201,16 @@ expect(mockFn).toHaveBeenCalled();
 
 Will result in this error:
 
-```
+```bash
 expect(mockedFunction).toHaveBeenCalled()
 
-Expected mock function "mockedFunction" to have been called, but it was not called.
+Expected number of calls: >= 1
+Received number of calls:    0
 ```
 
 ### `mockFn.mockReturnThis()`
 
-Syntactic sugar function for:
+Shorthand for:
 
 ```js
 jest.fn(function () {
@@ -246,7 +247,7 @@ console.log(myMockFn(), myMockFn(), myMockFn(), myMockFn());
 
 ### `mockFn.mockResolvedValue(value)`
 
-Syntactic sugar function for:
+Shorthand for:
 
 ```js
 jest.fn().mockImplementation(() => Promise.resolve(value));
@@ -264,7 +265,7 @@ test('async test', async () => {
 
 ### `mockFn.mockResolvedValueOnce(value)`
 
-Syntactic sugar function for:
+Shorthand for:
 
 ```js
 jest.fn().mockImplementationOnce(() => Promise.resolve(value));
@@ -289,7 +290,7 @@ test('async test', async () => {
 
 ### `mockFn.mockRejectedValue(value)`
 
-Syntactic sugar function for:
+Shorthand for:
 
 ```js
 jest.fn().mockImplementation(() => Promise.reject(value));
@@ -307,7 +308,7 @@ test('async test', async () => {
 
 ### `mockFn.mockRejectedValueOnce(value)`
 
-Syntactic sugar function for:
+Shorthand for:
 
 ```js
 jest.fn().mockImplementationOnce(() => Promise.reject(value));

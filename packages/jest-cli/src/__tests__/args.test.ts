@@ -8,8 +8,8 @@
 
 import type {Config} from '@jest/types';
 import {constants} from 'jest-config';
-import {buildArgv} from '../../cli';
-import {check} from '../../cli/args';
+import {check} from '../args';
+import {buildArgv} from '../run';
 
 const argv = (input: Partial<Config.Argv>): Config.Argv => input as Config.Argv;
 
@@ -105,7 +105,6 @@ describe('check', () => {
 describe('buildArgv', () => {
   it('should return only camelcased args ', async () => {
     const mockProcessArgv = jest
-      // @ts-expect-error
       .spyOn(process.argv, 'slice')
       .mockImplementation(() => ['--clear-mocks']);
 

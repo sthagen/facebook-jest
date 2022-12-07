@@ -13001,7 +13001,7 @@ __metadata:
     jest-leak-detector: "workspace:^"
     jest-util: "workspace:^"
     merge-stream: ^2.0.0
-    supports-color: ^8.0.0
+    supports-color: ^9.3.0
     tsd-lite: ^0.6.0
     worker-farm: ^1.6.0
   languageName: unknown
@@ -19414,6 +19414,13 @@ __metadata:
   dependencies:
     has-flag: ^4.0.0
   checksum: c052193a7e43c6cdc741eb7f378df605636e01ad434badf7324f17fb60c69a880d8d8fcdcb562cf94c2350e57b937d7425ab5b8326c67c2adc48f7c87c1db406
+  languageName: node
+  linkType: hard
+
+"supports-color@npm:^9.3.0":
+  version: 9.3.0
+  resolution: "supports-color@npm:9.3.0"
+  checksum: 1f46a14196f69c53a32627520fd4d466824a3b14326f08795b0da1b8ecb1efbcf7da39fd5f0fc2fc5fc113a36fc754754e8f9d45ac5fda239112906ea4dd1a74
   languageName: node
   linkType: hard
 

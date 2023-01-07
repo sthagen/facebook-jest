@@ -42,7 +42,6 @@ import {
   CallerTransformOptions,
   ScriptTransformer,
   ShouldInstrumentOptions,
-  TransformResult,
   TransformationOptions,
   handlePotentialSyntaxError,
   shouldInstrument,
@@ -1125,13 +1124,32 @@ export default class Runtime {
   isolateModules(fn: () => void): void {
     if (this._isolatedModuleRegistry || this._isolatedMockRegistry) {
       throw new Error(
-        'isolateModules cannot be nested inside another isolateModules.',
+        'isolateModules cannot be nested inside another isolateModules or isolateModulesAsync.',
       );
     }
     this._isolatedModuleRegistry = new Map();
     this._isolatedMockRegistry = new Map();
     try {
       fn();
+    } finally {
+      // might be cleared within the callback
+      this._isolatedModuleRegistry?.clear();
+      this._isolatedMockRegistry?.clear();
+      this._isolatedModuleRegistry = null;
+      this._isolatedMockRegistry = null;
+    }
+  }
+
+  async isolateModulesAsync(fn: () => Promise<void>): Promise<void> {
+    if (this._isolatedModuleRegistry || this._isolatedMockRegistry) {
+      throw new Error(
+        'isolateModulesAsync cannot be nested inside another isolateModulesAsync or isolateModules.',
+      );
+    }
+    this._isolatedModuleRegistry = new Map();
+    this._isolatedMockRegistry = new Map();
+    try {
+      await fn();
     } finally {
       // might be cleared within the callback
       this._isolatedModuleRegistry?.clear();
@@ -1555,14 +1573,7 @@ export default class Runtime {
       return source;
     }
 
-    let transformedFile: TransformResult | undefined =
-      this._fileTransforms.get(filename);
-
-    if (transformedFile) {
-      return transformedFile.code;
-    }
-
-    transformedFile = this._scriptTransformer.transform(
+    const transformedFile = this._scriptTransformer.transform(
       filename,
       this._getFullTransformationOptions(options),
       source,
@@ -1589,23 +1600,18 @@ export default class Runtime {
       return source;
     }
 
-    let transformedFile: TransformResult | undefined =
-      this._fileTransforms.get(filename);
-
-    if (transformedFile) {
-      return transformedFile.code;
-    }
-
-    transformedFile = await this._scriptTransformer.transformAsync(
+    const transformedFile = await this._scriptTransformer.transformAsync(
       filename,
       this._getFullTransformationOptions(options),
       source,
     );
 
-    this._fileTransforms.set(filename, {
-      ...transformedFile,
-      wrapperLength: 0,
-    });
+    if (this._fileTransforms.get(filename)?.code !== transformedFile.code) {
+      this._fileTransforms.set(filename, {
+        ...transformedFile,
+        wrapperLength: 0,
+      });
+    }
 
     if (transformedFile.sourceMapPath) {
       this._sourceMapRegistry.set(filename, transformedFile.sourceMapPath);
@@ -1696,9 +1702,13 @@ export default class Runtime {
     const moduleLookup: Record<string, VMModule> = {};
     for (const {module} of imports) {
       if (moduleLookup[module] === undefined) {
-        moduleLookup[module] = await this.loadEsmModule(
-          await this.resolveModule(module, identifier, context),
+        const resolvedModule = await this.resolveModule(
+          module,
+          identifier,
+          context,
         );
+
+        moduleLookup[module] = await this.linkAndEvaluateModule(resolvedModule);
       }
     }
 
@@ -2170,6 +2180,9 @@ export default class Runtime {
           'Your test environment does not support `mocked`, please update it.',
         );
       });
+    const replaceProperty = this._moduleMocker.replaceProperty.bind(
+      this._moduleMocker,
+    );
 
     const setTimeout = (timeout: number) => {
       this._environment.global[testTimeoutSymbol] = timeout;
@@ -2226,9 +2239,11 @@ export default class Runtime {
       getTimerCount: () => _getFakeTimers().getTimerCount(),
       isMockFunction: this._moduleMocker.isMockFunction,
       isolateModules,
+      isolateModulesAsync: this.isolateModulesAsync,
       mock,
       mocked,
       now: () => _getFakeTimers().now(),
+      replaceProperty,
       requireActual: moduleName => this.requireActual(from, moduleName),
       requireMock: moduleName => this.requireMock(from, moduleName),
       resetAllMocks,

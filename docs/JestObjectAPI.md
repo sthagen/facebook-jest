@@ -344,7 +344,7 @@ Returns the `jest` object for chaining.
 
 :::tip
 
-Writing tests in TypeScript? Use [`jest.Mocked`](MockFunctionAPI.md/#jestmockedsource) utility type or [`jest.mocked()`](MockFunctionAPI.md/#jestmockedsource-options) helper method to have your mocked modules typed.
+Writing tests in TypeScript? Use the [`jest.Mocked`](MockFunctionAPI.md/#jestmockedsource) utility type or the [`jest.mocked()`](MockFunctionAPI.md/#jestmockedsource-options) helper method to have your mocked modules typed.
 
 :::
 
@@ -361,6 +361,12 @@ See [TypeScript Usage](MockFunctionAPI.md/#jestmockedsource-options) chapter of 
 Indicates that the module system should never return a mocked version of the specified module from `require()` (e.g. that it should always return the real module).
 
 The most common use of this API is for specifying the module a given test intends to be testing (and thus doesn't want automatically mocked).
+
+Returns the `jest` object for chaining.
+
+### `jest.deepUnmock(moduleName)`
+
+Indicates that the module system should never return a mocked version of the specified module and its dependencies.
 
 Returns the `jest` object for chaining.
 
@@ -600,7 +606,7 @@ console.log(returnsTrue()); // true;
 
 :::tip
 
-See [Mock Functions](MockFunctionAPI.md#jestfnimplementation) page for details on TypeScript usage.
+See the [Mock Functions](MockFunctionAPI.md#jestfnimplementation) page for details on TypeScript usage.
 
 :::
 
@@ -669,7 +675,7 @@ By default, `jest.spyOn` also calls the **spied** method. This is different beha
 
 :::tip
 
-Since `jest.spyOn` is a mock, you could restore the initial state calling [jest.restoreAllMocks](#jestrestoreallmocks) on [afterEach](GlobalAPI.md#aftereachfn-timeout) method.
+Since `jest.spyOn` is a mock, you could restore the initial state by calling [`jest.restoreAllMocks`](#jestrestoreallmocks) in the body of the callback passed to the [afterEach](GlobalAPI.md#aftereachfn-timeout) hook.
 
 :::
 
@@ -989,23 +995,9 @@ Use the [`--showSeed`](CLI.md#--showseed) flag to print the seed in the test rep
 
 :::
 
-### `jest.setTimeout(timeout)`
+### `jest.isEnvironmentTornDown()`
 
-Set the default timeout interval (in milliseconds) for all tests and before/after hooks in the test file. This only affects the test file from which this function is called. The default timeout interval is 5 seconds if this method is not called.
-
-Example:
-
-```js
-jest.setTimeout(1000); // 1 second
-```
-
-:::tip
-
-To set timeout intervals on different tests in the same file, use the [`timeout` option on each individual test](GlobalAPI.md#testname-fn-timeout).
-
-If you want to set the timeout for all test files, use [`testTimeout`](Configuration.md#testtimeout-number) configuration option.
-
-:::
+Returns `true` if test environment has been torn down.
 
 ### `jest.retryTimes(numRetries, options)`
 
@@ -1030,3 +1022,21 @@ test('will fail', () => {
 ```
 
 Returns the `jest` object for chaining.
+
+### `jest.setTimeout(timeout)`
+
+Set the default timeout interval (in milliseconds) for all tests and before/after hooks in the test file. This only affects the test file from which this function is called. The default timeout interval is 5 seconds if this method is not called.
+
+Example:
+
+```js
+jest.setTimeout(1000); // 1 second
+```
+
+:::tip
+
+To set timeout intervals on different tests in the same file, use the [`timeout` option on each individual test](GlobalAPI.md#testname-fn-timeout).
+
+If you want to set the timeout for all test files, use [`testTimeout`](Configuration.md#testtimeout-number) configuration option.
+
+:::

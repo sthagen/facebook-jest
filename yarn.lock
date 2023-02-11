@@ -2800,6 +2800,7 @@ __metadata:
     "@typescript-eslint/parser": ^5.14.0
     ansi-regex: ^5.0.1
     ansi-styles: ^5.0.0
+    babel-jest: "workspace:^"
     camelcase: ^6.2.0
     chalk: ^4.0.0
     chokidar: ^3.3.0
@@ -2818,7 +2819,6 @@ __metadata:
     execa: ^5.0.0
     find-process: ^1.4.1
     glob: ^8.0.0
-    globby: ^11.0.1
     graceful-fs: ^4.2.9
     isbinaryfile: ^5.0.0
     istanbul-lib-coverage: ^3.0.0
@@ -2832,6 +2832,7 @@ __metadata:
     jest-serializer-ansi-escapes: ^2.0.1
     jest-silent-reporter: ^0.5.0
     jest-snapshot: "workspace:^"
+    jest-util: "workspace:^"
     jest-watch-typeahead: ^2.2.0
     jquery: ^3.2.1
     js-yaml: ^4.1.0
@@ -2842,7 +2843,6 @@ __metadata:
     p-limit: ^3.1.0
     pkg-dir: ^5.0.0
     prettier: ^2.1.1
-    progress: ^2.0.0
     promise: ^8.0.2
     read-pkg: ^5.2.0
     resolve: ^1.20.0
@@ -2896,6 +2896,7 @@ __metadata:
     jest-util: "workspace:^"
     jest-worker: "workspace:^"
     mock-fs: ^5.1.2
+    node-notifier: ^10.0.0
     slash: ^3.0.0
     string-length: ^4.0.1
     strip-ansi: ^6.0.0
@@ -2969,6 +2970,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@jest/test-utils@workspace:packages/test-utils"
   dependencies:
+    "@jest/globals": "workspace:^"
     "@jest/types": "workspace:^"
     "@types/node": "*"
     "@types/semver": ^7.1.0
@@ -3004,7 +3006,7 @@ __metadata:
     micromatch: ^4.0.4
     pirates: ^4.0.4
     slash: ^3.0.0
-    write-file-atomic: ^5.0.0
+    write-file-atomic: ^4.0.2
   languageName: unknown
   linkType: soft
 
@@ -5718,6 +5720,7 @@ __metadata:
     babel-plugin-transform-typescript-metadata: "*"
     core-js: ^3.2.1
     jest: "workspace:^"
+    jest-environment-jsdom: "workspace:^"
     jest-zone-patch: "*"
     rxjs: ^7.5.5
     tslib: ^2.0.0
@@ -9657,6 +9660,7 @@ __metadata:
     "@babel/preset-env": ^7.1.0
     babel-jest: "workspace:^"
     jest: "workspace:^"
+    jest-environment-jsdom: "workspace:^"
     jquery: ^3.2.1
   languageName: unknown
   linkType: soft
@@ -9708,6 +9712,7 @@ __metadata:
     "@testing-library/react": ^13.4.0
     babel-jest: "workspace:^"
     jest: "workspace:^"
+    jest-environment-jsdom: "workspace:^"
     react: 18.2.0
     react-dom: ^18.2.0
   languageName: unknown
@@ -9722,6 +9727,7 @@ __metadata:
     "@babel/preset-react": ^7.12.1
     babel-jest: "workspace:^"
     jest: "workspace:^"
+    jest-environment-jsdom: "workspace:^"
     react: 18.2.0
     react-dom: ^18.2.0
   languageName: unknown
@@ -9763,6 +9769,7 @@ __metadata:
     "@jest/globals": "workspace:^"
     babel-jest: "workspace:^"
     jest: "workspace:^"
+    jest-environment-jsdom: "workspace:^"
     react: 18.2.0
     react-dom: ^18.2.0
     typescript: ^4.8.2
@@ -12710,7 +12717,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"jest-environment-jsdom@workspace:packages/jest-environment-jsdom":
+"jest-environment-jsdom@workspace:^, jest-environment-jsdom@workspace:packages/jest-environment-jsdom":
   version: 0.0.0-use.local
   resolution: "jest-environment-jsdom@workspace:packages/jest-environment-jsdom"
   dependencies:
@@ -12762,7 +12769,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "jest-haste-map@workspace:packages/jest-haste-map"
   dependencies:
-    "@jest/test-utils": "workspace:^"
     "@jest/types": "workspace:^"
     "@types/fb-watchman": ^2.0.0
     "@types/graceful-fs": ^4.1.3
@@ -12860,6 +12866,7 @@ __metadata:
     pretty-format: "workspace:^"
     slash: ^3.0.0
     stack-utils: ^2.0.3
+    tempy: ^1.0.0
   languageName: unknown
   linkType: soft
 
@@ -12989,6 +12996,7 @@ __metadata:
     "@jest/console": "workspace:^"
     "@jest/environment": "workspace:^"
     "@jest/test-result": "workspace:^"
+    "@jest/test-utils": "workspace:^"
     "@jest/transform": "workspace:^"
     "@jest/types": "workspace:^"
     "@tsd/typescript": ^4.9.0
@@ -13257,6 +13265,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "jest-worker@workspace:packages/jest-worker"
   dependencies:
+    "@babel/core": ^7.11.6
     "@tsd/typescript": ^4.9.0
     "@types/merge-stream": ^1.1.2
     "@types/node": "*"
@@ -17154,13 +17163,6 @@ __metadata:
   version: 0.11.10
   resolution: "process@npm:0.11.10"
   checksum: bfcce49814f7d172a6e6a14d5fa3ac92cc3d0c3b9feb1279774708a719e19acd673995226351a082a9ae99978254e320ccda4240ddc474ba31a76c79491ca7c3
-  languageName: node
-  linkType: hard
-
-"progress@npm:^2.0.0":
-  version: 2.0.3
-  resolution: "progress@npm:2.0.3"
-  checksum: f67403fe7b34912148d9252cb7481266a354bd99ce82c835f79070643bb3c6583d10dbcfda4d41e04bbc1d8437e9af0fb1e1f2135727878f5308682a579429b7
   languageName: node
   linkType: hard
 
@@ -21937,6 +21939,16 @@ __metadata:
     signal-exit: ^3.0.2
     typedarray-to-buffer: ^3.1.5
   checksum: c55b24617cc61c3a4379f425fc62a386cc51916a9b9d993f39734d005a09d5a4bb748bc251f1304e7abd71d0a26d339996c275955f527a131b1dcded67878280
+  languageName: node
+  linkType: hard
+
+"write-file-atomic@npm:^4.0.2":
+  version: 4.0.2
+  resolution: "write-file-atomic@npm:4.0.2"
+  dependencies:
+    imurmurhash: ^0.1.4
+    signal-exit: ^3.0.7
+  checksum: 5da60bd4eeeb935eec97ead3df6e28e5917a6bd317478e4a85a5285e8480b8ed96032bbcc6ecd07b236142a24f3ca871c924ec4a6575e623ec1b11bf8c1c253c
   languageName: node
   linkType: hard
 

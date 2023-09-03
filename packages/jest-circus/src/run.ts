@@ -9,6 +9,7 @@ import {AsyncLocalStorage} from 'async_hooks';
 import pLimit = require('p-limit');
 import {jestExpect} from '@jest/expect';
 import type {Circus} from '@jest/types';
+import {invariant} from 'jest-util';
 import shuffleArray, {RandomNumberGenerator, rngBuilder} from './shuffleArray';
 import {dispatch, getState} from './state';
 import {RETRY_TIMES} from './types';
@@ -17,7 +18,6 @@ import {
   getAllHooksForDescribe,
   getEachHooksForTest,
   getTestID,
-  invariant,
   makeRunResult,
 } from './utils';
 
@@ -137,7 +137,9 @@ function collectConcurrentTests(
 function startTestsConcurrently(concurrentTests: Array<ConcurrentTestEntry>) {
   const mutex = pLimit(getState().maxConcurrency);
   const testNameStorage = new AsyncLocalStorage<string>();
-  jestExpect.setState({currentConcurrentTestName: testNameStorage});
+  jestExpect.setState({
+    currentConcurrentTestName: () => testNameStorage.getStore(),
+  });
   for (const test of concurrentTests) {
     try {
       const testFn = test.fn;

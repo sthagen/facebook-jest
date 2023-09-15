@@ -31,8 +31,8 @@ const concatenateRelevantDiffs = (
 // Encapsulate change lines until either a common newline or the end.
 class ChangeBuffer {
   private readonly op: number;
-  private line: Array<Diff>; // incomplete line
-  private lines: Array<Diff>; // complete lines
+  private readonly line: Array<Diff>; // incomplete line
+  private readonly lines: Array<Diff>; // complete lines
   private readonly changeColor: DiffOptionsColor;
 
   constructor(op: number, changeColor: DiffOptionsColor) {
@@ -54,14 +54,14 @@ class ChangeBuffer {
     // therefore change diffs have change color;
     // otherwise then it has line color only.
     this.lines.push(
-      this.line.length !== 1
-        ? new Diff(
+      this.line.length === 1
+        ? this.line[0][0] === this.op
+          ? this.line[0] // can use instance
+          : new Diff(this.op, this.line[0][1])
+        : new Diff(
             this.op,
             concatenateRelevantDiffs(this.op, this.line, this.changeColor),
-          )
-        : this.line[0][0] === this.op
-        ? this.line[0] // can use instance
-        : new Diff(this.op, this.line[0][1]), // was common diff
+          ), // was common diff
     );
     this.line.length = 0;
   }

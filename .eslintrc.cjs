@@ -385,7 +385,7 @@ module.exports = {
   parserOptions: {
     sourceType: 'module',
   },
-  plugins: ['import', 'jsdoc'],
+  plugins: ['import', 'jsdoc', 'unicorn'],
   rules: {
     'accessor-pairs': ['warn', {setWithoutGet: true}],
     'block-scoped-var': 'off',
@@ -590,6 +590,10 @@ module.exports = {
     'wrap-iife': 'off',
     'wrap-regex': 'off',
     yoda: 'off',
+
+    'unicorn/no-negated-condition': 'error',
+    'unicorn/prefer-includes': 'error',
+    'unicorn/template-indent': 'error',
   },
   settings: {
     'import/ignore': ['react-native'],

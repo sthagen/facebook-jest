@@ -13,11 +13,11 @@ type Pragmas = Record<string, string | Array<string>>;
 const commentEndRe = /\*\/$/;
 const commentStartRe = /^\/\*\*?/;
 const docblockRe = /^\s*(\/\*\*?(.|\r?\n)*?\*\/)/;
-const lineCommentRe = /(^|\s+)\/\/([^\r\n]*)/g;
+const lineCommentRe = /(^|\s+)\/\/([^\n\r]*)/g;
 const ltrimNewlineRe = /^(\r?\n)+/;
 const multilineRe =
-  /(?:^|\r?\n) *(@[^\r\n]*?) *\r?\n *(?![^@\r\n]*\/\/[^]*)([^@\r\n\s][^@\r\n]+?) *\r?\n/g;
-const propertyRe = /(?:^|\r?\n) *@(\S+) *([^\r\n]*)/g;
+  /(?:^|\r?\n) *(@[^\n\r]*?) *\r?\n *(?![^\n\r@]*\/\/[^]*)([^\s@][^\n\r@]+?) *\r?\n/g;
+const propertyRe = /(?:^|\r?\n) *@(\S+) *([^\n\r]*)/g;
 const stringStartRe = /(\r?\n|^) *\* ?/g;
 const STRING_ARRAY: ReadonlyArray<string> = [];
 
@@ -27,8 +27,9 @@ export function extract(contents: string): string {
 }
 
 export function strip(contents: string): string {
-  const match = contents.match(docblockRe);
-  return match && match[0] ? contents.slice(match[0].length) : contents;
+  const matchResult = contents.match(docblockRe);
+  const match = matchResult?.[0];
+  return match == null ? contents : contents.slice(match.length);
 }
 
 export function parse(docblock: string): Pragmas {

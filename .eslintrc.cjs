@@ -35,13 +35,19 @@ module.exports = {
     'plugin:eslint-comments/recommended',
     'plugin:prettier/recommended',
     'plugin:unicorn/recommended',
+    'plugin:promise/recommended',
   ],
   globals: {
     console: 'readonly',
   },
   overrides: [
     {
-      extends: ['plugin:@typescript-eslint/strict', 'plugin:import/typescript'],
+      extends: [
+        'plugin:@typescript-eslint/eslint-recommended',
+        'plugin:@typescript-eslint/strict',
+        'plugin:@typescript-eslint/stylistic',
+        'plugin:import/typescript',
+      ],
       files: ['*.ts', '*.tsx'],
       plugins: ['@typescript-eslint/eslint-plugin', 'local'],
       rules: {
@@ -59,6 +65,7 @@ module.exports = {
         ],
         '@typescript-eslint/prefer-ts-expect-error': 'error',
         '@typescript-eslint/no-var-requires': 'off',
+        '@typescript-eslint/consistent-indexed-object-style': 'off',
         // TS verifies these
         'consistent-return': 'off',
         'no-dupe-class-members': 'off',
@@ -68,10 +75,7 @@ module.exports = {
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/no-invalid-void-type': 'off',
-
-        // TODO: part of "stylistic" rules, remove explicit activation when that lands
-        '@typescript-eslint/no-empty-function': 'error',
-        '@typescript-eslint/no-empty-interface': 'error',
+        '@typescript-eslint/consistent-type-definitions': 'off',
 
         // not needed to be enforced for TS
         'import/namespace': 'off',
@@ -326,6 +330,7 @@ module.exports = {
       rules: {
         '@typescript-eslint/ban-ts-comment': 'off',
         '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/class-literal-property-style': 'off',
       },
     },
     {
@@ -425,6 +430,12 @@ module.exports = {
       files: 'packages/jest-mock/src/__tests__/**/*',
       rules: {
         'unicorn/no-static-only-class': 'off',
+      },
+    },
+    {
+      files: '**/*.mjs',
+      rules: {
+        'unicorn/prefer-top-level-await': 'error',
       },
     },
   ],
@@ -617,6 +628,11 @@ module.exports = {
     'prefer-arrow-callback': ['error', {allowNamedFunctions: true}],
     'prefer-const': 'error',
     'prefer-template': 'error',
+
+    'promise/always-return': 'off',
+    'promise/catch-or-return': 'off',
+    'promise/no-callback-in-promise': 'off',
+
     quotes: [
       'error',
       'single',
@@ -646,6 +662,12 @@ module.exports = {
     // enforced by `@typescript-eslint/no-this-alias` already
     'unicorn/no-this-assignment': 'off',
 
+    // Not an issue with TypeScript
+    'unicorn/no-array-callback-reference': 'off',
+
+    // reduce is fine
+    'unicorn/no-array-reduce': 'off',
+
     // nah
     'unicorn/consistent-destructuring': 'off',
     'unicorn/no-nested-ternary': 'off',
@@ -655,59 +677,45 @@ module.exports = {
     'unicorn/prefer-event-target': 'off',
     'unicorn/prefer-switch': 'off',
     'unicorn/prefer-ternary': 'off',
-    'unicorn/switch-case-braces': 'off',
-
-    // TODO: enable for `.mjs` files
     'unicorn/prefer-top-level-await': 'off',
+    'unicorn/switch-case-braces': 'off',
 
     // TODO: decide whether or not we want these
     'unicorn/filename-case': 'off',
-    'unicorn/no-array-callback-reference': 'off',
-    'unicorn/no-array-reduce': 'off',
     'unicorn/prefer-reflect-apply': 'off',
 
     // TODO: turn on at some point
-    'unicorn/better-regex': 'off',
     'unicorn/catch-error-name': 'off',
     'unicorn/consistent-function-scoping': 'off',
     'unicorn/error-message': 'off',
     'unicorn/escape-case': 'off',
-    'unicorn/no-array-method-this-argument': 'off',
-    'unicorn/no-array-push-push': 'off',
     'unicorn/no-await-expression-member': 'off',
     'unicorn/no-console-spaces': 'off',
     'unicorn/no-empty-file': 'off',
     'unicorn/no-for-loop': 'off',
     'unicorn/no-hex-escape': 'off',
-    'unicorn/no-instanceof-array': 'off',
-    'unicorn/no-new-array': 'off',
     'unicorn/no-object-as-default-parameter': 'off',
     'unicorn/no-thenable': 'off',
     'unicorn/no-typeof-undefined': 'off',
     'unicorn/no-useless-promise-resolve-reject': 'off',
     'unicorn/no-useless-undefined': 'off',
     'unicorn/number-literal-case': 'off',
-    'unicorn/prefer-array-flat': 'off',
-    'unicorn/prefer-array-flat-map': 'off',
-    'unicorn/prefer-array-index-of': 'off',
-    'unicorn/prefer-array-some': 'off',
-    'unicorn/prefer-at': 'off',
     'unicorn/prefer-date-now': 'off',
-    'unicorn/prefer-export-from': 'off',
     'unicorn/prefer-logical-operator-over-ternary': 'off',
     'unicorn/prefer-math-trunc': 'off',
     'unicorn/prefer-native-coercion-functions': 'off',
-    'unicorn/prefer-node-protocol': 'off',
     'unicorn/prefer-number-properties': 'off',
     'unicorn/prefer-object-from-entries': 'off',
-    'unicorn/prefer-optional-catch-binding': 'off',
     'unicorn/prefer-prototype-methods': 'off',
-    'unicorn/prefer-regexp-test': 'off',
-    'unicorn/prefer-set-has': 'off',
     'unicorn/prefer-spread': 'off',
     'unicorn/prefer-string-replace-all': 'off',
     'unicorn/prevent-abbreviations': 'off',
     'unicorn/text-encoding-identifier-case': 'off',
+
+    // enabling this is blocked by https://github.com/microsoft/rushstack/issues/2780
+    'unicorn/prefer-export-from': 'off',
+    // enabling this is blocked by https://github.com/jestjs/jest/pull/14297
+    'unicorn/prefer-node-protocol': 'off',
   },
   settings: {
     'import/ignore': ['react-native'],

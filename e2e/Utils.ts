@@ -235,7 +235,7 @@ export const createEmptyPackage = (
 
 export const extractSummary = (stdout: string) => {
   const match = stdout
-    .replace(/(?:\\[rn])+/g, '\n')
+    .replace(/(?:\\[nr])+/g, '\n')
     .match(
       /(Seed:.*\n)?Test Suites:.*\nTests.*\nSnapshots.*\nTime.*(\nRan all test suites)*.*\n*$/gm,
     );
@@ -267,7 +267,7 @@ const sortTests = (stdout: string) =>
       if (['RUNS', 'PASS', 'FAIL'].includes(line.slice(0, 4))) {
         tests.push([line]);
       } else {
-        tests[tests.length - 1].push(line);
+        tests.at(-1)!.push(line);
       }
       return tests;
     }, [])

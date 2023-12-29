@@ -438,7 +438,7 @@ export default class Resolver {
     return matches
       ? (moduleName: string) =>
           moduleName.replace(
-            /\$([0-9]+)/g,
+            /\$(\d+)/g,
             (_, index) => matches[parseInt(index, 10)] || '',
           )
       : (moduleName: string) => moduleName;
@@ -518,7 +518,7 @@ export default class Resolver {
 
     const moduleDirectory = this._options.moduleDirectories;
     const paths = nodeModulesPaths(from, {moduleDirectory});
-    if (paths[paths.length - 1] === undefined) {
+    if (paths.at(-1) === undefined) {
       // circumvent node-resolve bug that adds `undefined` as last item.
       paths.pop();
     }

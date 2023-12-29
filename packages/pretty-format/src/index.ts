@@ -183,7 +183,7 @@ function printBasicValue(
   if (toStringed === '[object RegExp]') {
     if (escapeRegex) {
       // https://github.com/benjamingr/RegExp.escape/blob/main/polyfill.js
-      return regExpToString.call(val).replace(/[\\^$*+?.()|[\]{}]/g, '\\$&');
+      return regExpToString.call(val).replace(/[$()*+.?[\\\]^{|}]/g, '\\$&');
     }
     return regExpToString.call(val);
   }
@@ -342,10 +342,10 @@ function printPlugin(
 }
 
 function findPlugin(plugins: Plugins, val: unknown) {
-  for (let p = 0; p < plugins.length; p++) {
+  for (const plugin of plugins) {
     try {
-      if (plugins[p].test(val)) {
-        return plugins[p];
+      if (plugin.test(val)) {
+        return plugin;
       }
     } catch (error: any) {
       throw new PrettyFormatPluginError(error.message, error.stack);
@@ -504,7 +504,7 @@ const getConfig = (options?: OptionsReceived): Config => ({
 });
 
 function createIndent(indent: number): string {
-  return new Array(indent + 1).join(' ');
+  return Array.from({length: indent + 1}).join(' ');
 }
 
 /**

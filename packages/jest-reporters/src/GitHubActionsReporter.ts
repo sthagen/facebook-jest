@@ -231,10 +231,8 @@ export default class GitHubActionsReporter extends BaseReporter {
         });
       } else {
         let alreadyInserted = false;
-        for (let index = 0; index < branches.length; index++) {
-          if (
-            this.arrayEqual(branches[index], element.ancestorTitles.slice(0, 1))
-          ) {
+        for (const branch of branches) {
+          if (this.arrayEqual(branch, element.ancestorTitles.slice(0, 1))) {
             alreadyInserted = true;
             break;
           }
@@ -260,7 +258,7 @@ export default class GitHubActionsReporter extends BaseReporter {
   ): ResultTreeNode {
     const node: ResultTreeNode = {
       children: [],
-      name: ancestors[ancestors.length - 1],
+      name: ancestors.at(-1)!,
       passed: true,
     };
     const branches: Array<Array<string>> = [];
@@ -286,10 +284,10 @@ export default class GitHubActionsReporter extends BaseReporter {
         )
       ) {
         let alreadyInserted = false;
-        for (let index = 0; index < branches.length; index++) {
+        for (const branch of branches) {
           if (
             this.arrayEqual(
-              branches[index],
+              branch,
               element.ancestorTitles.slice(0, ancestors.length + 1),
             )
           ) {

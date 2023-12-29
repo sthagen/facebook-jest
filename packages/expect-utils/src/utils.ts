@@ -334,7 +334,7 @@ const isObject = (a: any) => a !== null && typeof a === 'object';
 const isObjectWithKeys = (a: any) =>
   isObject(a) &&
   !(a instanceof Error) &&
-  !(a instanceof Array) &&
+  !Array.isArray(a) &&
   !(a instanceof Date);
 
 export const subsetEquality = (
@@ -503,7 +503,7 @@ export function emptyObject(obj: unknown): boolean {
   return obj && typeof obj === 'object' ? Object.keys(obj).length === 0 : false;
 }
 
-const MULTILINE_REGEXP = /[\r\n]/;
+const MULTILINE_REGEXP = /[\n\r]/;
 
 export const isOneline = (expected: unknown, received: unknown): boolean =>
   typeof expected === 'string' &&

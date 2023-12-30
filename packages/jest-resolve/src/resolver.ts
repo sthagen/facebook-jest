@@ -130,10 +130,10 @@ export default class Resolver {
         paths: paths ? (nodePaths || []).concat(paths) : nodePaths,
         rootDir: options.rootDir,
       });
-    } catch (e) {
+    } catch (error) {
       // we always wanna throw if it's an internal import
       if (options.throwIfNotFound || path.startsWith('#')) {
-        throw e;
+        throw error;
       }
     }
     return null;
@@ -174,10 +174,10 @@ export default class Resolver {
         rootDir: options.rootDir,
       });
       return result;
-    } catch (e: unknown) {
+    } catch (error: unknown) {
       // we always wanna throw if it's an internal import
       if (options.throwIfNotFound || path.startsWith('#')) {
-        throw e;
+        throw error;
       }
     }
     return null;
@@ -439,7 +439,7 @@ export default class Resolver {
       ? (moduleName: string) =>
           moduleName.replace(
             /\$(\d+)/g,
-            (_, index) => matches[parseInt(index, 10)] || '',
+            (_, index) => matches[Number.parseInt(index, 10)] || '',
           )
       : (moduleName: string) => moduleName;
   }

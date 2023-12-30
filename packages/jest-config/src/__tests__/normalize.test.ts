@@ -74,7 +74,7 @@ it('picks an id based on the rootDir', async () => {
   const rootDir = '/root/path/foo';
   const expected = createHash('sha1')
     .update('/root/path/foo')
-    .update(String(Infinity))
+    .update(String(Number.POSITIVE_INFINITY))
     .digest('hex')
     .slice(0, 32);
   const {options} = await normalize(
@@ -1119,6 +1119,7 @@ describe('preset', () => {
       '/node_modules/react-native-js-preset/jest-preset.js',
       () => ({
         // @ts-expect-error: Testing runtime error
+        // eslint-disable-next-line unicorn/prefer-prototype-methods
         transform: {}.nonExistingProp.call(),
       }),
       {virtual: true},

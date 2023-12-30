@@ -234,7 +234,10 @@ module.exports = {
         'no-undef': 'off',
         'no-unused-vars': 'off',
         'sort-keys': 'off',
+        'unicorn/consistent-function-scoping': 'off',
+        'unicorn/no-await-expression-member': 'off',
         'unicorn/no-static-only-class': 'off',
+        'unicorn/prefer-number-properties': 'off',
       },
     },
     // demonstration of matchers usage
@@ -343,6 +346,8 @@ module.exports = {
       ],
       rules: {
         '@typescript-eslint/explicit-module-boundary-types': 'off',
+        'unicorn/no-await-expression-member': 'off',
+        'unicorn/consistent-function-scoping': 'off',
       },
     },
     {
@@ -377,6 +382,7 @@ module.exports = {
       ],
       rules: {
         'import/no-extraneous-dependencies': 'off',
+        'unicorn/consistent-function-scoping': 'off',
       },
     },
     {
@@ -420,14 +426,6 @@ module.exports = {
       },
     },
     {
-      files: 'e2e/native-esm/wasm-bindgen/index_bg.js',
-      rules: {
-        'unicorn/prefer-code-point': 'off',
-        'unicorn/prefer-optional-catch-binding': 'off',
-        'unicorn/text-encoding-identifier-case': 'off',
-      },
-    },
-    {
       files: 'packages/jest-mock/src/__tests__/**/*',
       rules: {
         'unicorn/no-static-only-class': 'off',
@@ -437,6 +435,25 @@ module.exports = {
       files: '**/*.mjs',
       rules: {
         'unicorn/prefer-top-level-await': 'error',
+      },
+    },
+    {
+      files: [
+        'e2e/coverage-report/__mocks__/sumDependency.js',
+        'e2e/require-main-after-create-require/empty.js',
+        'packages/create-jest/src/__tests__/__fixtures__/**/*',
+        'packages/jest-core/src/__tests__/**/*',
+        'packages/jest-haste-map/src/__tests__/test_dotfiles_root/**/*',
+        'packages/jest-resolve/src/__mocks__/**/*',
+      ],
+      rules: {
+        'unicorn/no-empty-file': 'off',
+      },
+    },
+    {
+      files: 'packages/expect/src/__tests__/*.test.js',
+      rules: {
+        'unicorn/prefer-number-properties': 'off',
       },
     },
   ],
@@ -674,6 +691,7 @@ module.exports = {
     'unicorn/no-lonely-if': 'off',
     'unicorn/no-null': 'off',
     'unicorn/no-process-exit': 'off',
+    'unicorn/no-useless-undefined': 'off',
     'unicorn/prefer-event-target': 'off',
     'unicorn/prefer-switch': 'off',
     'unicorn/prefer-ternary': 'off',
@@ -685,24 +703,9 @@ module.exports = {
     'unicorn/prefer-reflect-apply': 'off',
 
     // TODO: turn on at some point
-    'unicorn/catch-error-name': 'off',
-    'unicorn/consistent-function-scoping': 'off',
     'unicorn/error-message': 'off',
-    'unicorn/no-await-expression-member': 'off',
-    'unicorn/no-console-spaces': 'off',
-    'unicorn/no-empty-file': 'off',
     'unicorn/no-object-as-default-parameter': 'off',
-    'unicorn/no-thenable': 'off',
-    'unicorn/no-typeof-undefined': 'off',
-    'unicorn/no-useless-promise-resolve-reject': 'off',
-    'unicorn/no-useless-undefined': 'off',
-    'unicorn/prefer-date-now': 'off',
-    'unicorn/prefer-logical-operator-over-ternary': 'off',
-    'unicorn/prefer-math-trunc': 'off',
-    'unicorn/prefer-native-coercion-functions': 'off',
-    'unicorn/prefer-number-properties': 'off',
     'unicorn/prefer-object-from-entries': 'off',
-    'unicorn/prefer-prototype-methods': 'off',
     'unicorn/prefer-spread': 'off',
     'unicorn/prefer-string-replace-all': 'off',
     'unicorn/prevent-abbreviations': 'off',

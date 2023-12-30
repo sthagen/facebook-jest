@@ -98,7 +98,7 @@ export abstract class AsymmetricMatcher<T>
 
 class Any extends AsymmetricMatcher<any> {
   constructor(sample: unknown) {
-    if (typeof sample === 'undefined') {
+    if (sample === undefined) {
       throw new TypeError(
         'any() expects to be passed a constructor function. ' +
           'Please pass one or use anything() to match any object.',
@@ -333,9 +333,15 @@ class CloseTo extends AsymmetricMatcher<number> {
       return false;
     }
     let result = false;
-    if (other === Infinity && this.sample === Infinity) {
+    if (
+      other === Number.POSITIVE_INFINITY &&
+      this.sample === Number.POSITIVE_INFINITY
+    ) {
       result = true; // Infinity - Infinity is NaN
-    } else if (other === -Infinity && this.sample === -Infinity) {
+    } else if (
+      other === Number.NEGATIVE_INFINITY &&
+      this.sample === Number.NEGATIVE_INFINITY
+    ) {
       result = true; // -Infinity - -Infinity is NaN
     } else {
       result =

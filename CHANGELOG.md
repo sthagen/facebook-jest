@@ -34,7 +34,9 @@
 - `[@jest/types]` Improve argument type inference passed to `test` and `describe` callback functions from `each` tables ([#14920](https://github.com/jestjs/jest/pull/14920))
 - `[jest-snapshot]` [**BREAKING**] Add support for [Error causes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/cause) in snapshots ([#13965](https://github.com/facebook/jest/pull/13965))
 - `[jest-snapshot]` Support Prettier 3 ([#14566](https://github.com/facebook/jest/pull/14566))
+- `[@jest/util-snapshot]` Extract utils used by tooling from `jest-snapshot` into its own package ([#15095](https://github.com/facebook/jest/pull/15095))
 - `[pretty-format]` [**BREAKING**] Do not render empty string children (`''`) in React plugin ([#14470](https://github.com/facebook/jest/pull/14470))
+- `[jest-each]` Introduce `%$` option to add number of the test to its title ([#14710](https://github.com/jestjs/jest/pull/14710))
 
 ### Fixes
 
@@ -63,11 +65,11 @@
 - `[jest-leak-detector]` Make leak-detector more aggressive when running GC ([#14526](https://github.com/jestjs/jest/pull/14526))
 - `[jest-runtime]` Properly handle re-exported native modules in ESM via CJS ([#14589](https://github.com/jestjs/jest/pull/14589))
 - `[jest-util]` Make sure `isInteractive` works in a browser ([#14552](https://github.com/jestjs/jest/pull/14552))
-- `[jest-util]` Add missing dependency on `jest-regex-util` ([#15030](https://github.com/jestjs/jest/pull/15030))
 - `[pretty-format]` [**BREAKING**] Print `ArrayBuffer` and `DataView` correctly ([#14290](https://github.com/jestjs/jest/pull/14290))
 - `[jest-cli]` When specifying paths on the command line, only match against the relative paths of the test files ([#12519](https://github.com/jestjs/jest/pull/12519))
   - [**BREAKING**] Changes `testPathPattern` configuration option to `testPathPatterns`, which now takes a list of patterns instead of the regex.
   - [**BREAKING**] `--testPathPattern` is now `--testPathPatterns`
+  - [**BREAKING**] Specifying `testPathPatterns` when programmatically calling `watch` must be specified as `new TestPathPatterns(patterns)`, where `TestPathPatterns` can be imported from `@jest/pattern`
 - `[jest-reporters, jest-runner]` Unhandled errors without stack get correctly logged to console ([#14619](https://github.com/jestjs/jest/pull/14619))
 
 ### Performance
@@ -77,6 +79,7 @@
 
 ### Chore & Maintenance
 
+- `[*]` Increase version of `micromatch` to `^4.0.7` ([#15082](https://github.com/jestjs/jest/pull/15082))
 - `[*]` [**BREAKING**] Drop support for Node.js versions 14 and 19 ([#14460](https://github.com/jestjs/jest/pull/14460))
 - `[*]` [**BREAKING**] Drop support for `typescript@4.3`, minimum version is now `5.0` ([#14542](https://github.com/jestjs/jest/pull/14542))
 - `[*]` Depend on exact versions of monorepo dependencies instead of `^` range ([#14553](https://github.com/jestjs/jest/pull/14553))

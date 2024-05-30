@@ -1,7 +1,7 @@
 {
   "name": "@jest/reporters",
   "description": "Jest's reporters",
-  "version": "30.0.0-alpha.4",
+  "version": "30.0.0-alpha.5",
   "main": "./build/index.js",
   "types": "./build/index.d.ts",
   "exports": {
@@ -40,6 +40,7 @@
     "v8-to-istanbul": "^9.0.1"
   },
   "devDependencies": {
+    "@jest/pattern": "workspace:*",
     "@jest/test-utils": "workspace:*",
     "@types/exit": "^0.1.30",
     "@types/graceful-fs": "^4.1.3",

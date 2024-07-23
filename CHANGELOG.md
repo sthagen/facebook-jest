@@ -14,6 +14,7 @@
 - `[jest-config]` Allow loading `jest.config.cts` files ([#14070](https://github.com/facebook/jest/pull/14070))
 - `[jest-config]` Added an option to disable `ts-node` typechecking ([#15161](https://github.com/jestjs/jest/pull/15161))
 - `[jest-config]` Show `rootDir` in error message when a `preset` fails to load ([#15194](https://github.com/jestjs/jest/pull/15194))
+- `[jest-config]` Support loading TS config files using `esbuild-register` via docblock loader ([#15190](https://github.com/jestjs/jest/pull/15190))
 - `[@jest/core]` Group together open handles with the same stack trace ([#13417](https://github.com/jestjs/jest/pull/13417), & [#14789](https://github.com/jestjs/jest/pull/14789))
 - `[@jest/core]` Add `perfStats` to surface test setup overhead ([#14622](https://github.com/jestjs/jest/pull/14622))
 - `[@jest/core]` [**BREAKING**] Changed `--filter` to accept an object with shape `{ filtered: Array<string> }` to match [documentation](https://jestjs.io/docs/cli#--filterfile) ([#13319](https://github.com/jestjs/jest/pull/13319))
@@ -82,6 +83,8 @@
   - [**BREAKING**] `--testPathPattern` is now `--testPathPatterns`
   - [**BREAKING**] Specifying `testPathPatterns` when programmatically calling `watch` must be specified as `new TestPathPatterns(patterns)`, where `TestPathPatterns` can be imported from `@jest/pattern`
 - `[jest-reporters, jest-runner]` Unhandled errors without stack get correctly logged to console ([#14619](https://github.com/jestjs/jest/pull/14619))
+- `[jest-worker]` Properly handle a circular reference error when worker tries to send an assertion fails where either the expected or actual value is circular ([#15191](https://github.com/jestjs/jest/pull/15191))
+- `[jest-worker]` Properly handle a BigInt when worker tries to send an assertion fails where either the expected or actual value is BigInt ([#15191](https://github.com/jestjs/jest/pull/15191))
 
 ### Performance
 
@@ -101,6 +104,7 @@
 - `[docs]` Don't use alias matchers in docs ([#14631](https://github.com/jestjs/jest/pull/14631))
 - `[babel-jest, babel-preset-jest]` [**BREAKING**] Increase peer dependency of `@babel/core` to `^7.11` ([#14109](https://github.com/jestjs/jest/pull/14109))
 - `[babel-jest, @jest/transform]` Update `babel-plugin-istanbul` to v6 ([#15156](https://github.com/jestjs/jest/pull/15156))
+- `[babel-plugin-jest-hoist]` Move unnecessary `dependencies` to `devDependencies` ([#15010](https://github.com/jestjs/jest/pull/15010))
 - `[expect]` [**BREAKING**] Remove `.toBeCalled()`, `.toBeCalledTimes()`, `.toBeCalledWith()`, `.lastCalledWith()`, `.nthCalledWith()`, `.toReturn()`, `.toReturnTimes()`, `.toReturnWith()`, `.lastReturnedWith()`, `.nthReturnedWith()` and `.toThrowError()` matcher aliases ([#14632](https://github.com/jestjs/jest/pull/14632))
 - `[jest-cli, jest-config, @jest/types]` [**BREAKING**] Remove deprecated `--init` argument ([#14490](https://github.com/jestjs/jest/pull/14490))
 - `[jest-config, @jest/core, jest-util]` Upgrade `ci-info` ([#14655](https://github.com/jestjs/jest/pull/14655))

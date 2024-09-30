@@ -5610,12 +5610,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/merge-stream@npm:^1.1.2":
-  version: 1.1.5
-  resolution: "@types/merge-stream@npm:1.1.5"
+"@types/merge-stream@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "@types/merge-stream@npm:2.0.0"
   dependencies:
     "@types/node": "*"
-  checksum: 79b4b10b9b887ddc3c28c88cc56527800153b257b7d7b97e7520f061ba3b6daf629e2f819cfb6ac65be1ce705bf61c7b8830d0f1adb93b3fd61c916bbf7252dd
+  checksum: a310412bbc6b4d99cc95cad0572b215e17cb6b75734e94deea8855058007bea9beea486f7c435683514574ccc84da54c75a3883562d1ebfaae3bb040ed8e8d90
   languageName: node
   linkType: hard
 
@@ -13836,7 +13836,7 @@ __metadata:
   resolution: "jest-worker@workspace:packages/jest-worker"
   dependencies:
     "@babel/core": ^7.11.6
-    "@types/merge-stream": ^1.1.2
+    "@types/merge-stream": ^2.0.0
     "@types/node": "*"
     "@types/supports-color": ^8.1.0
     "@types/ungap__structured-clone": ^1.2.0
@@ -18995,8 +18995,8 @@ __metadata:
   linkType: hard
 
 "rollup@npm:^2.43.1":
-  version: 2.79.1
-  resolution: "rollup@npm:2.79.1"
+  version: 2.79.2
+  resolution: "rollup@npm:2.79.2"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -19004,7 +19004,7 @@ __metadata:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: 6a2bf167b3587d4df709b37d149ad0300692cc5deb510f89ac7bdc77c8738c9546ae3de9322b0968e1ed2b0e984571f5f55aae28fa7de4cfcb1bc5402a4e2be6
+  checksum: df7aa4c8b95245dede157b06ab71e1921de6080757d30e9bf31f8fb142064d12dda865e2bafbab4349588f43425b2965a290c9a5da1c048246a70fc21734ebd7
   languageName: node
   linkType: hard
 

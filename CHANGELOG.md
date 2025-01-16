@@ -8,6 +8,7 @@
 - `[jest-circus]` Add a `retryImmediately` option to `jest.retryTimes` ([#14696](https://github.com/jestjs/jest/pull/14696))
 - `[jest-circus, jest-jasmine2]` Allow `setupFilesAfterEnv` to export an async function ([#10962](https://github.com/jestjs/jest/issues/10962))
 - `[jest-circus, jest-test-result]` Add `startedAt` timestamp in `TestCaseResultObject` within `onTestCaseResult` ([#15145](https://github.com/jestjs/jest/pull/15145))
+- `[jest-cli]` Export `buildArgv` ([#15310](https://github.com/facebook/jest/pull/15310))
 - `[jest-config]` [**BREAKING**] Add `mts` and `cts` to default `moduleFileExtensions` config ([#14369](https://github.com/facebook/jest/pull/14369))
 - `[jest-config]` [**BREAKING**] Update `testMatch` and `testRegex` default option for supporting `mjs`, `cjs`, `mts`, and `cts` ([#14584](https://github.com/jestjs/jest/pull/14584))
 - `[jest-config]` Loads config file from provided path in `package.json` ([#14044](https://github.com/facebook/jest/pull/14044))
@@ -19,7 +20,9 @@
 - `[@jest/core]` Add `perfStats` to surface test setup overhead ([#14622](https://github.com/jestjs/jest/pull/14622))
 - `[@jest/core]` [**BREAKING**] Changed `--filter` to accept an object with shape `{ filtered: Array<string> }` to match [documentation](https://jestjs.io/docs/cli#--filterfile) ([#13319](https://github.com/jestjs/jest/pull/13319))
 - `[@jest/core]` Support `--outputFile` option for [`--listTests`](https://jestjs.io/docs/cli#--listtests) ([#14980](https://github.com/jestjs/jest/pull/14980))
+- `[@jest/core]` Stringify Errors properly with `--json` flag ([#15329](https://github.com/jestjs/jest/pull/15329))
 - `[@jest/core, @jest/test-sequencer]` [**BREAKING**] Exposes `globalConfig` & `contexts` to `TestSequencer` ([#14535](https://github.com/jestjs/jest/pull/14535), & [#14543](https://github.com/jestjs/jest/pull/14543))
+- `[jest-each]` Introduce `%$` option to add number of the test to its title ([#14710](https://github.com/jestjs/jest/pull/14710))
 - `[@jest/environment]` [**BREAKING**] Remove deprecated `jest.genMockFromModule()` ([#15042](https://github.com/jestjs/jest/pull/15042))
 - `[@jest/environment]` [**BREAKING**] Remove unnecessary defensive code ([#15045](https://github.com/jestjs/jest/pull/15045))
 - `[jest-environment-jsdom]` [**BREAKING**] Upgrade JSDOM to v22 ([#13825](https://github.com/jestjs/jest/pull/13825))
@@ -38,6 +41,7 @@
 - `[jest-runtime]` Support `import.meta.resolve` ([#14930](https://github.com/jestjs/jest/pull/14930))
 - `[jest-runtime]` [**BREAKING**] Make it mandatory to pass `globalConfig` to the `Runtime` constructor ([#15044](https://github.com/jestjs/jest/pull/15044))
 - `[jest-runtime]` Add `unstable_unmockModule` ([#15080](https://github.com/jestjs/jest/pull/15080))
+- `[jest-runtime]` Add `onGenerateMock` transformer callback for auto generated callbacks ([#15433](https://github.com/jestjs/jest/pull/15433))
 - `[@jest/schemas]` Upgrade `@sinclair/typebox` to v0.34 ([#15450](https://github.com/jestjs/jest/pull/15450))
 - `[@jest/types]` `test.each()`: Accept a readonly (`as const`) table properly ([#14565](https://github.com/jestjs/jest/pull/14565))
 - `[@jest/types]` Improve argument type inference passed to `test` and `describe` callback functions from `each` tables ([#14920](https://github.com/jestjs/jest/pull/14920))
@@ -45,7 +49,6 @@
 - `[jest-snapshot]` Support Prettier 3 ([#14566](https://github.com/facebook/jest/pull/14566))
 - `[@jest/util-snapshot]` Extract utils used by tooling from `jest-snapshot` into its own package ([#15095](https://github.com/facebook/jest/pull/15095))
 - `[pretty-format]` [**BREAKING**] Do not render empty string children (`''`) in React plugin ([#14470](https://github.com/facebook/jest/pull/14470))
-- `[jest-each]` Introduce `%$` option to add number of the test to its title ([#14710](https://github.com/jestjs/jest/pull/14710))
 
 ### Fixes
 
@@ -60,6 +63,7 @@
 - `[jest-circus]` Replace recursive `makeTestResults` implementation with iterative one ([#14760](https://github.com/jestjs/jest/pull/14760))
 - `[jest-circus]` Omit `expect.hasAssertions()` errors if a test already has errors ([#14866](https://github.com/jestjs/jest/pull/14866))
 - `[jest-circus, jest-expect, jest-snapshot]` Pass `test.failing` tests when containing failing snapshot matchers ([#14313](https://github.com/jestjs/jest/pull/14313))
+- `[jest-circus]` Concurrent tests now emit jest circus events at the correct point and in the expected order. ([#15381](https://github.com/jestjs/jest/pull/15381))
 - `[jest-cli]` [**BREAKING**] Validate CLI flags that require arguments receives them ([#14783](https://github.com/jestjs/jest/pull/14783))
 - `[jest-config]` Make sure to respect `runInBand` option ([#14578](https://github.com/jestjs/jest/pull/14578))
 - `[jest-config]` Support `testTimeout` in project config ([#14697](https://github.com/jestjs/jest/pull/14697))

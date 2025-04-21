@@ -8373,10 +8373,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cjs-module-lexer@npm:^1.0.0":
-  version: 1.4.3
-  resolution: "cjs-module-lexer@npm:1.4.3"
-  checksum: 221a1661a9ff4944b472c85ac7cd5029b2f2dc7f6c5f4ecf887f261503611110b43a48acb6c07f8f04109c772d1637fdb20b31252bf27058f35aa97bf5ad8b12
+"cjs-module-lexer@npm:^2.0.0":
+  version: 2.1.0
+  resolution: "cjs-module-lexer@npm:2.1.0"
+  checksum: beeece5cfc4fd77f5c41c30c3942f6219be5bf9f323148a5e52a87414bf35017e2a0aec5d8e25e694af26f05ff833515ccae6dbe1316e4cd44b4c38f11ba949e
   languageName: node
   linkType: hard
 
@@ -13647,7 +13647,7 @@ __metadata:
     jest-util: "workspace:*"
     p-limit: ^3.1.0
     pretty-format: "workspace:*"
-    pure-rand: ^6.0.0
+    pure-rand: ^7.0.0
     slash: ^3.0.0
     stack-utils: ^2.0.3
     tempy: ^1.0.0
@@ -14078,7 +14078,7 @@ __metadata:
     "@types/graceful-fs": ^4.1.3
     "@types/node": "*"
     chalk: ^4.0.0
-    cjs-module-lexer: ^1.0.0
+    cjs-module-lexer: ^2.0.0
     collect-v8-coverage: ^1.0.0
     glob: ^10.3.10
     graceful-fs: ^4.2.9
@@ -18856,13 +18856,6 @@ __metadata:
   dependencies:
     escape-goat: ^4.0.0
   checksum: 0e4f4ab6bbdce600fa6d23b1833f1af57b2641246ff4cbe10f9d66e4e5479b0de2864a88d5bd629eef59524eda3c6680726acd7f3f873d9ed46b7f095d0bb5f6
-  languageName: node
-  linkType: hard
-
-"pure-rand@npm:^6.0.0":
-  version: 6.1.0
-  resolution: "pure-rand@npm:6.1.0"
-  checksum: 8d53bc02bed99eca0b65b505090152ee7e9bd67dd74f8ff32ba1c883b87234067c5bf68d2614759fb217d82594d7a92919e6df80f97885e7b12b42af4bd3316a
   languageName: node
   linkType: hard
 

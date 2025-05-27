@@ -1,6 +1,6 @@
 {
   "name": "jest-diff",
-  "version": "30.0.0-beta.2",
+  "version": "30.0.0-beta.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/jestjs/jest.git",
@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@jest/test-utils": "workspace:*",
-    "strip-ansi": "^6.0.0"
+    "strip-ansi": "^6.0.1"
   },
   "engines": {
     "node": "^18.14.0 || ^20.0.0 || >=22.0.0"

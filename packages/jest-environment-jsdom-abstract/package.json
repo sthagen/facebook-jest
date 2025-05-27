@@ -1,6 +1,6 @@
 {
   "name": "@jest/environment-jsdom-abstract",
-  "version": "30.0.0-beta.2",
+  "version": "30.0.0-beta.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/jestjs/jest.git",
@@ -28,7 +28,7 @@
     "jest-util": "workspace:*"
   },
   "devDependencies": {
-    "jsdom": "^26.0.0"
+    "jsdom": "^26.1.0"
   },
   "peerDependencies": {
     "canvas": "^3.0.0",

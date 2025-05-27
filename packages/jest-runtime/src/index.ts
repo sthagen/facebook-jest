@@ -9,7 +9,6 @@ import nativeModule = require('module');
 import * as path from 'path';
 import {URL, fileURLToPath, pathToFileURL} from 'url';
 import {
-  Script,
   // @ts-expect-error: experimental, not added to the types
   SourceTextModule,
   // @ts-expect-error: experimental, not added to the types
@@ -17,6 +16,7 @@ import {
   type Context as VMContext,
   // @ts-expect-error: experimental, not added to the types
   type Module as VMModule,
+  compileFunction,
 } from 'vm';
 import {parse as parseCjs} from 'cjs-module-lexer';
 import {CoverageInstrumenter, type V8Coverage} from 'collect-v8-coverage';
@@ -33,15 +33,12 @@ import type {
 import type {LegacyFakeTimers, ModernFakeTimers} from '@jest/fake-timers';
 import type {expect, jest} from '@jest/globals';
 import type {SourceMapRegistry} from '@jest/source-map';
-import type {
-  RuntimeTransformResult,
-  TestContext,
-  V8CoverageResult,
-} from '@jest/test-result';
+import type {TestContext, V8CoverageResult} from '@jest/test-result';
 import {
   type CallerTransformOptions,
   type ScriptTransformer,
   type ShouldInstrumentOptions,
+  type TransformResult,
   type TransformationOptions,
   handlePotentialSyntaxError,
   shouldInstrument,
@@ -145,10 +142,6 @@ const isWasm = (modulePath: string): boolean => modulePath.endsWith('.wasm');
 
 const unmockRegExpCache = new WeakMap();
 
-const EVAL_RESULT_VARIABLE = 'Object.<anonymous>';
-
-type RunScriptEvalResult = {[EVAL_RESULT_VARIABLE]: ModuleWrapper};
-
 const runtimeSupportsVmModules = typeof SyntheticModule === 'function';
 
 const supportsNodeColonModulePrefixInRequire = (() => {
@@ -203,11 +196,11 @@ export default class Runtime {
   >;
   private readonly _sourceMapRegistry: SourceMapRegistry;
   private readonly _scriptTransformer: ScriptTransformer;
-  private readonly _fileTransforms: Map<string, RuntimeTransformResult>;
+  private readonly _fileTransforms: Map<string, TransformResult>;
   private readonly _fileTransformsMutex: Map<string, Promise<void>>;
   private _v8CoverageInstrumenter: CoverageInstrumenter | undefined;
   private _v8CoverageResult: V8Coverage | undefined;
-  private _v8CoverageSources: Map<string, RuntimeTransformResult> | undefined;
+  private _v8CoverageSources: Map<string, TransformResult> | undefined;
   private readonly _transitiveShouldMock: Map<string, boolean>;
   private _unmockList: RegExp | undefined;
   private readonly _virtualMocks: Map<string, boolean>;
@@ -1069,20 +1062,28 @@ export default class Runtime {
       return module as T;
     }
 
-    const manualMockOrStub = this._resolver.getMockModule(
-      from,
-      moduleName,
-      options,
-    );
+    /** Resolved mock module path from (potentially aliased) module name. */
+    const manualMockPath: string | null = (() => {
+      // Attempt to get manual mock path when moduleName is a:
 
-    let modulePath =
-      this._resolver.getMockModule(from, moduleName, options) ||
-      this._resolveCjsModule(from, moduleName);
+      // A. Core module specifier i.e. ['fs', 'node:fs']:
+      // Normalize then check for a root manual mock '<rootDir>/__mocks__/'
+      if (this._resolver.isCoreModule(moduleName)) {
+        const moduleWithoutNodePrefix =
+          this._resolver.normalizeCoreModuleSpecifier(moduleName);
+        return this._resolver.getMockModule(
+          from,
+          moduleWithoutNodePrefix,
+          options,
+        );
+      }
 
-    let isManualMock =
-      manualMockOrStub &&
-      !this._resolver.resolveStubModuleName(from, moduleName, options);
-    if (!isManualMock) {
+      // B. Node module specifier i.e. ['jest', 'react']:
+      // Look for root manual mock
+      const rootMock = this._resolver.getMockModule(from, moduleName, options);
+      if (rootMock) return rootMock;
+
+      // C. Relative/Absolute path:
       // If the actual module file has a __mocks__ dir sitting immediately next
       // to it, look to see if there is a manual mock for this file.
       //
@@ -1094,7 +1095,7 @@ export default class Runtime {
       // Where some other module does a relative require into each of the
       // respective subDir{1,2} directories and expects a manual mock
       // corresponding to that particular my_module.js file.
-
+      const modulePath = this._resolveCjsModule(from, moduleName);
       const moduleDir = path.dirname(modulePath);
       const moduleFileName = path.basename(modulePath);
       const potentialManualMock = path.join(
@@ -1103,26 +1104,28 @@ export default class Runtime {
         moduleFileName,
       );
       if (fs.existsSync(potentialManualMock)) {
-        isManualMock = true;
-        modulePath = potentialManualMock;
+        return potentialManualMock;
       }
-    }
-    if (isManualMock) {
+
+      return null;
+    })();
+
+    if (manualMockPath) {
       const localModule: InitialModule = {
         children: [],
         exports: {},
-        filename: modulePath,
-        id: modulePath,
+        filename: manualMockPath,
+        id: manualMockPath,
         isPreloading: false,
         loaded: false,
-        path: path.dirname(modulePath),
+        path: path.dirname(manualMockPath),
       };
 
       this._loadModule(
         localModule,
         from,
         moduleName,
-        modulePath,
+        manualMockPath,
         undefined,
         mockRegistry,
       );
@@ -1603,21 +1606,10 @@ export default class Runtime {
 
     const transformedCode = this.transformFile(filename, options);
 
-    let compiledFunction: ModuleWrapper | null = null;
-
-    const script = this.createScriptFromCode(transformedCode, filename);
-
-    let runScript: RunScriptEvalResult | null = null;
-
-    const vmContext = this._environment.getVmContext();
-
-    if (vmContext) {
-      runScript = script.runInContext(vmContext, {filename});
-    }
-
-    if (runScript !== null) {
-      compiledFunction = runScript[EVAL_RESULT_VARIABLE];
-    }
+    const compiledFunction = this.createScriptFromCode(
+      transformedCode,
+      filename,
+    );
 
     if (compiledFunction === null) {
       this._logFormattedReferenceError(
@@ -1690,10 +1682,7 @@ export default class Runtime {
       source,
     );
 
-    this._fileTransforms.set(filename, {
-      ...transformedFile,
-      wrapperLength: this.constructModuleWrapperStart().length,
-    });
+    this._fileTransforms.set(filename, transformedFile);
 
     if (transformedFile.sourceMapPath) {
       this._sourceMapRegistry.set(filename, transformedFile.sourceMapPath);
@@ -1718,10 +1707,7 @@ export default class Runtime {
     );
 
     if (this._fileTransforms.get(filename)?.code !== transformedFile.code) {
-      this._fileTransforms.set(filename, {
-        ...transformedFile,
-        wrapperLength: 0,
-      });
+      this._fileTransforms.set(filename, transformedFile);
     }
 
     if (transformedFile.sourceMapPath) {
@@ -1731,34 +1717,39 @@ export default class Runtime {
   }
 
   private createScriptFromCode(scriptSource: string, filename: string) {
+    const vmContext = this._environment.getVmContext();
+
+    if (vmContext == null) {
+      return null;
+    }
+
     try {
       const scriptFilename = this._resolver.isCoreModule(filename)
         ? `jest-nodejs-core-${filename}`
         : filename;
-      return new Script(this.wrapCodeInModuleWrapper(scriptSource), {
-        columnOffset: this._fileTransforms.get(filename)?.wrapperLength,
-        displayErrors: true,
-        filename: scriptFilename,
-        // @ts-expect-error: Experimental ESM API
-        importModuleDynamically: async (specifier: string) => {
-          invariant(
-            runtimeSupportsVmModules,
-            'You need to run with a version of node that supports ES Modules in the VM API. See https://jestjs.io/docs/ecmascript-modules',
-          );
+      return compileFunction(
+        scriptSource,
+        this.constructInjectedModuleParameters(),
+        {
+          filename: scriptFilename,
+          // @ts-expect-error: Experimental ESM API
+          importModuleDynamically: async (specifier: string) => {
+            invariant(
+              runtimeSupportsVmModules,
+              'You need to run with a version of node that supports ES Modules in the VM API. See https://jestjs.io/docs/ecmascript-modules',
+            );
 
-          const context = this._environment.getVmContext?.();
+            const module = await this.resolveModule(
+              specifier,
+              scriptFilename,
+              vmContext,
+            );
 
-          invariant(context, 'Test environment has been torn down');
-
-          const module = await this.resolveModule(
-            specifier,
-            scriptFilename,
-            context,
-          );
-
-          return this.linkAndEvaluateModule(module);
+            return this.linkAndEvaluateModule(module);
+          },
+          parsingContext: vmContext,
         },
-      });
+      ) as ModuleWrapper;
     } catch (error: any) {
       throw handlePotentialSyntaxError(error);
     }
@@ -1766,9 +1757,7 @@ export default class Runtime {
 
   private _requireCoreModule(moduleName: string, supportPrefix: boolean) {
     const moduleWithoutNodePrefix =
-      supportPrefix && moduleName.startsWith('node:')
-        ? moduleName.slice('node:'.length)
-        : moduleName;
+      supportPrefix && this._resolver.normalizeCoreModuleSpecifier(moduleName);
 
     if (moduleWithoutNodePrefix === 'process') {
       return this._environment.global.process;
@@ -2482,16 +2471,6 @@ export default class Runtime {
         noStackTrace: false,
       })}`,
     );
-  }
-
-  private wrapCodeInModuleWrapper(content: string) {
-    return `${this.constructModuleWrapperStart() + content}\n}});`;
-  }
-
-  private constructModuleWrapperStart() {
-    const args = this.constructInjectedModuleParameters();
-
-    return `({"${EVAL_RESULT_VARIABLE}":function(${args.join(',')}){`;
   }
 
   private constructInjectedModuleParameters(): Array<string> {

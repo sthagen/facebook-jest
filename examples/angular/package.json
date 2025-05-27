@@ -13,15 +13,15 @@
     "@angular/platform-browser": "^12.0.0",
     "@angular/platform-browser-dynamic": "^12.0.0",
     "core-js": "^3.2.1",
-    "rxjs": "^7.5.5",
+    "rxjs": "^7.8.2",
     "tslib": "^2.0.0",
     "typescript": "^5.0.4",
-    "zone.js": "~0.11.3"
+    "zone.js": "~0.11.8"
   },
   "devDependencies": {
-    "@babel/core": "^7.11.6",
-    "@babel/plugin-proposal-decorators": "*",
-    "@babel/preset-env": "^7.1.0",
+    "@babel/core": "^7.27.1",
+    "@babel/plugin-proposal-decorators": "^7.27.1",
+    "@babel/preset-env": "^7.27.2",
     "@babel/preset-typescript": "^7.0.0",
     "@jest/globals": "workspace:*",
     "babel-jest": "workspace:*",

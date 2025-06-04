@@ -1,6 +1,6 @@
 {
   "name": "jest-docblock",
-  "version": "30.0.0-beta.3",
+  "version": "30.0.0-beta.8",
   "repository": {
     "type": "git",
     "url": "https://github.com/jestjs/jest.git",
@@ -19,7 +19,7 @@
     "./package.json": "./package.json"
   },
   "dependencies": {
-    "detect-newline": "^3.0.0"
+    "detect-newline": "^3.1.0"
   },
   "devDependencies": {
     "@types/node": "*"

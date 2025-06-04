@@ -8,7 +8,6 @@
 import {EventEmitter} from 'events';
 import {PassThrough} from 'stream';
 import getStream = require('get-stream');
-import * as supportsColor from 'supports-color';
 import {
   CHILD_MESSAGE_CALL,
   CHILD_MESSAGE_INITIALIZE,
@@ -30,6 +29,7 @@ let Worker: typeof import('../ChildProcessWorker').default;
 let childProcess: typeof import('child_process');
 let forkInterface: ReturnType<typeof childProcess.fork>;
 let originalExecArgv: typeof process.execArgv;
+let originalForceColor: string | undefined;
 
 const totalmem = jest.spyOn(require('os') as typeof import('os'), 'totalmem');
 
@@ -42,6 +42,9 @@ class MockedForkInterface extends EventEmitter {
 }
 
 beforeEach(() => {
+  originalForceColor = process.env.FORCE_COLOR;
+  delete process.env.FORCE_COLOR;
+
   originalExecArgv = process.execArgv;
 
   childProcess = require('child_process') as typeof import('child_process');
@@ -63,6 +66,7 @@ beforeEach(() => {
 afterEach(() => {
   jest.resetModules();
   process.execArgv = originalExecArgv;
+  process.env.FORCE_COLOR = originalForceColor;
 });
 
 it('passes fork options down to child_process.fork, adding the defaults', () => {
@@ -84,7 +88,7 @@ it('passes fork options down to child_process.fork, adding the defaults', () => 
   expect(jest.mocked(childProcess.fork).mock.calls[0][0]).toBe(child);
   expect(jest.mocked(childProcess.fork).mock.calls[0][2]).toEqual({
     cwd: '/tmp', // Overridden default option.
-    env: {...process.env, FORCE_COLOR: supportsColor.stdout ? '1' : undefined}, // Default option.
+    env: process.env, // Default option.
     execArgv: ['-p'], // Filtered option.
     execPath: 'hello', // Added option.
     serialization: 'advanced', // Default option.

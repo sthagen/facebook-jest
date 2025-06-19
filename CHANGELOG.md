@@ -1,12 +1,20 @@
 ## main
 
+## 30.0.1
+
 ### Features
 
 - `[jest-resolver]` Implement the `defaultAsyncResolver` ([#15679](https://github.com/jestjs/jest/pull/15679))
 
+### Fixes
+
+- `[jest-resolver]` Resolve builtin modules correctly ([#15683](https://github.com/jestjs/jest/pull/15683))
+- `[jest-environment-node, jest-util]` Avoid setting globals cleanup protection symbol when feature is off ([#15684](https://github.com/jestjs/jest/pull/15684))
+
 ### Chore & Maintenance
 
 - `[*]` Remove and deprecate `jest-repl` package ([#15673](https://github.com/jestjs/jest/pull/15673))
+- `[jest-resolver]` Replace custom `isBuiltinModule` with node's `isBuiltin` ([#15685](https://github.com/jestjs/jest/pull/15685))
 
 ## 30.0.0
 

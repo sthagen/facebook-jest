@@ -1,6 +1,6 @@
 {
   "name": "jest-resolve",
-  "version": "30.0.0",
+  "version": "30.0.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/jestjs/jest.git",
@@ -29,7 +29,8 @@
     "unrs-resolver": "^1.7.11"
   },
   "devDependencies": {
-    "@types/graceful-fs": "^4.1.9"
+    "@types/graceful-fs": "^4.1.9",
+    "url": "^0.11.4"
   },
   "engines": {
     "node": "^18.14.0 || ^20.0.0 || ^22.0.0 || >=24.0.0"

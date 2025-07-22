@@ -1,13 +1,15 @@
 ## main
 
+## 30.0.5
+
 ### Features
 
 - `[jest-config]` Allow `testMatch` to take a string value
+- `[jest-worker]` Let `workerIdleMemoryLimit` accept 0 to always restart worker child processes
 
 ### Fixes
 
 - `[expect]` Fix `bigint` error ([#15702](https://github.com/jestjs/jest/pull/15702))
-- `[ci]` Deduplicate static checks in CI workflow by combining typecheck, lint, and yarn-validate jobs
 
 ## 30.0.4
 

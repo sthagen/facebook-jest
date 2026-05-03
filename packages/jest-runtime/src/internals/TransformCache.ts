@@ -5,6 +5,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+import stripBOM from 'strip-bom';
 import type {SourceMapRegistry} from '@jest/source-map';
 import type {
   CallerTransformOptions,
@@ -12,13 +13,13 @@ import type {
   TransformResult,
   TransformationOptions,
 } from '@jest/transform';
-import type FileCache from './FileCache';
+import type {FileCache} from './FileCache';
 
 export interface TransformOptions extends Required<CallerTransformOptions> {
   isInternalModule: boolean;
 }
 
-export default class TransformCache {
+export class TransformCache {
   private readonly scriptTransformer: ScriptTransformer;
   private readonly fileCache: FileCache;
   private readonly getFullTransformationOptions: (
@@ -77,8 +78,24 @@ export default class TransformCache {
     return transformedFile.code;
   }
 
+  canTransformSync(filename: string): boolean {
+    return this.scriptTransformer.canTransformSync(filename);
+  }
+
   getCachedSource(filename: string): string | undefined {
     return this.transforms.get(filename)?.code;
+  }
+
+  // Reads + transforms a `.json` file's source, returning the transformed
+  // text (still a string). Caller is responsible for `JSON.parse`-ing in the
+  // appropriate realm.
+  transformJson(filename: string, options?: TransformOptions): string {
+    const source = stripBOM(this.fileCache.readFile(filename));
+    return this.scriptTransformer.transformJson(
+      filename,
+      this.getFullTransformationOptions(options),
+      source,
+    );
   }
 
   getEntries(): ReadonlyMap<string, TransformResult> {
@@ -100,6 +117,9 @@ export default class TransformCache {
   }
   setMutex(key: string, promise: Promise<void>): void {
     this.mutex.set(key, promise);
+  }
+  clearMutex(key: string): void {
+    this.mutex.delete(key);
   }
 
   // `resetModules` calls this; source maps are preserved so post-reset stack

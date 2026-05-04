@@ -9,12 +9,13 @@ import {SourceTextModule, SyntheticModule, createContext} from 'node:vm';
 import {testWithSyncEsm, testWithVmEsm} from '@jest/test-utils';
 import type {JestEnvironment} from '@jest/environment';
 import type {CjsExportsCache} from '../CjsExportsCache';
-import {EsmLoader, type TestState} from '../EsmLoader';
+import {EsmLoader} from '../EsmLoader';
 import type {FileCache} from '../FileCache';
 import type {JestGlobals} from '../JestGlobals';
 import type {MockState} from '../MockState';
 import type {ModuleRegistries} from '../ModuleRegistries';
 import type {Resolution} from '../Resolution';
+import {TestState} from '../TestState';
 import type {TransformCache} from '../TransformCache';
 import type {CoreModuleProvider} from '../cjsRequire';
 
@@ -32,13 +33,14 @@ type Stubs = {
   requireModuleOrMock: jest.MockedFunction<
     (from: string, moduleName: string) => unknown
   >;
-  getTestState: jest.MockedFunction<() => TestState>;
+  testState: TestState;
   logFormattedReferenceError: jest.MockedFunction<(msg: string) => void>;
 };
 
 function makeLoader(overrides: Partial<Stubs> = {}) {
   const context = createContext({});
   const esmRegistry = new Map<string, unknown>();
+  const logFormattedReferenceError = jest.fn();
   const stubs: Stubs = {
     cjsExportsCache: {
       getExportsOf: jest.fn(() => []),
@@ -52,16 +54,18 @@ function makeLoader(overrides: Partial<Stubs> = {}) {
     fileCache: {
       readFileBuffer: jest.fn(),
     } as unknown as jest.Mocked<FileCache>,
-    getTestState: jest.fn(() => 'inTest' as const),
     jestGlobals: {
       esmGlobalsModule: jest.fn(),
       jestObjectFor: jest.fn(),
     } as unknown as jest.Mocked<JestGlobals>,
-    logFormattedReferenceError: jest.fn(),
+    logFormattedReferenceError,
     mockState: {
       getEsmFactory: jest.fn(() => undefined),
       getEsmModuleId: jest.fn((from, name) => `${from}\0${name}`),
-      shouldMockEsmSync: jest.fn(() => false),
+      shouldMockEsmSync: jest.fn((_from, name) => ({
+        moduleID: name,
+        shouldMock: false,
+      })),
     } as unknown as jest.Mocked<MockState>,
     registries: {
       getActiveEsmRegistry: jest.fn(() => esmRegistry),
@@ -74,6 +78,7 @@ function makeLoader(overrides: Partial<Stubs> = {}) {
       resolveEsm: jest.fn((_from, name) => name),
     } as unknown as jest.Mocked<Resolution>,
     shouldLoadAsEsm: jest.fn(() => true),
+    testState: new TestState(logFormattedReferenceError),
     transformCache: {
       canTransformSync: jest.fn(() => true),
       hasMutex: jest.fn(() => false),
@@ -86,24 +91,22 @@ function makeLoader(overrides: Partial<Stubs> = {}) {
     coreModule: stubs.coreModule,
     environment: stubs.environment,
     fileCache: stubs.fileCache,
-    getTestState: stubs.getTestState,
     jestGlobals: stubs.jestGlobals,
-    logFormattedReferenceError: stubs.logFormattedReferenceError,
     mockState: stubs.mockState,
     registries: stubs.registries,
     requireModuleOrMock: stubs.requireModuleOrMock,
     resolution: stubs.resolution,
     shouldLoadAsEsm: stubs.shouldLoadAsEsm,
+    testState: stubs.testState,
     transformCache: stubs.transformCache,
   });
   return {context, esmRegistry, loader, stubs};
 }
 
 describe('EsmLoader.tryLoadGraphSync', () => {
-  testWithSyncEsm('returns null and logs when test state is tornDown', () => {
-    const {loader, stubs} = makeLoader({
-      getTestState: jest.fn(() => 'tornDown' as const),
-    });
+  testWithSyncEsm('returns null when testState reports torn down', () => {
+    const {loader, stubs} = makeLoader();
+    stubs.testState.teardown();
     const result = loader.tryLoadGraphSync('/m.mjs', '', 'sync-preferred');
     expect(result).toBeNull();
     expect(stubs.logFormattedReferenceError).toHaveBeenCalledWith(
@@ -119,7 +122,7 @@ describe('EsmLoader.tryLoadGraphSync', () => {
         context,
         identifier: '/m.mjs',
       });
-      // Settle to `'evaluated'` — that's the contract for cache reuse.
+      // Settle to `'evaluated'` - that's the contract for cache reuse.
       await cached.link(() => {
         throw new Error('no deps');
       });
@@ -217,7 +220,10 @@ describe('EsmLoader.tryLoadGraphSync', () => {
         mockState: {
           getEsmFactory: jest.fn(() => undefined),
           getEsmModuleId: jest.fn(() => '/dep.mjs'),
-          shouldMockEsmSync: jest.fn(() => true),
+          shouldMockEsmSync: jest.fn((_from, name) => ({
+            moduleID: name,
+            shouldMock: true,
+          })),
         } as unknown as jest.Mocked<MockState>,
       });
       const erroredMock = new SyntheticModule(
@@ -395,7 +401,10 @@ describe('EsmLoader mock dispatch', () => {
         mockState: {
           getEsmFactory: jest.fn(() => () => Promise.resolve({})),
           getEsmModuleId: jest.fn(() => 'mid'),
-          shouldMockEsmSync: jest.fn(() => true),
+          shouldMockEsmSync: jest.fn((_from, name) => ({
+            moduleID: name,
+            shouldMock: true,
+          })),
         } as unknown as jest.Mocked<MockState>,
       });
       stubs.transformCache.transform.mockReturnValue(
@@ -415,7 +424,10 @@ describe('EsmLoader mock dispatch', () => {
         mockState: {
           getEsmFactory: jest.fn(() => () => Promise.resolve({})),
           getEsmModuleId: jest.fn(() => 'mid'),
-          shouldMockEsmSync: jest.fn(() => true),
+          shouldMockEsmSync: jest.fn((_from, name) => ({
+            moduleID: name,
+            shouldMock: true,
+          })),
         } as unknown as jest.Mocked<MockState>,
       });
       stubs.transformCache.transform.mockReturnValue(
@@ -439,7 +451,10 @@ describe('EsmLoader mock dispatch', () => {
         mockState: {
           getEsmFactory: jest.fn(() => factory),
           getEsmModuleId: jest.fn(() => 'mid'),
-          shouldMockEsmSync: jest.fn(() => true),
+          shouldMockEsmSync: jest.fn((_from, name) => ({
+            moduleID: name,
+            shouldMock: true,
+          })),
         } as unknown as jest.Mocked<MockState>,
       });
       stubs.transformCache.transform.mockReturnValue(
@@ -521,7 +536,7 @@ describe('EsmLoader.dynamicImportFromCjs (legacy linkAndEvaluate)', () => {
 
       // `resolveModule`'s `@jest/globals` branch returns this directly from the
       // registry, so `dynamicImportFromCjs` ends up calling
-      // `linkAndEvaluateModule(errored)` — exactly the path the new guard
+      // `linkAndEvaluateModule(errored)` - exactly the path the new guard
       // protects.
       esmRegistry.set('@jest/globals/from.mjs', errored);
 

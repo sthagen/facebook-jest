@@ -12,6 +12,7 @@ import type {MockState} from './MockState';
 import {type ModuleExecutor, isCjsParseError} from './ModuleExecutor';
 import type {ModuleRegistries} from './ModuleRegistries';
 import type {Resolution} from './Resolution';
+import type {TestState} from './TestState';
 import type {TransformCache, TransformOptions} from './TransformCache';
 import type {CoreModuleProvider} from './cjsRequire';
 import type {InitialModule, ModuleRegistry} from './moduleTypes';
@@ -21,9 +22,7 @@ import {
   supportsSyncEvaluate,
 } from './nodeCapabilities';
 
-export type TestState = 'loading' | 'inTest' | 'betweenTests' | 'tornDown';
-
-export interface CjsLoaderDeps {
+export interface CjsLoaderOptions {
   resolution: Resolution;
   registries: ModuleRegistries;
   mockState: MockState;
@@ -32,7 +31,7 @@ export interface CjsLoaderDeps {
   coreModule: CoreModuleProvider;
   executor: ModuleExecutor;
   requireEsm: <T>(modulePath: string) => T;
-  getTestState: () => TestState;
+  testState: TestState;
   logFormattedReferenceError: (msg: string) => void;
 }
 
@@ -45,20 +44,20 @@ export class CjsLoader {
   private readonly coreModule: CoreModuleProvider;
   private readonly executor: ModuleExecutor;
   private readonly requireEsm: <T>(modulePath: string) => T;
-  private readonly getTestState: () => TestState;
+  private readonly testState: TestState;
   private readonly logFormattedReferenceError: (msg: string) => void;
 
-  constructor(deps: CjsLoaderDeps) {
-    this.resolution = deps.resolution;
-    this.registries = deps.registries;
-    this.mockState = deps.mockState;
-    this.transformCache = deps.transformCache;
-    this.environment = deps.environment;
-    this.coreModule = deps.coreModule;
-    this.executor = deps.executor;
-    this.requireEsm = deps.requireEsm;
-    this.getTestState = deps.getTestState;
-    this.logFormattedReferenceError = deps.logFormattedReferenceError;
+  constructor(options: CjsLoaderOptions) {
+    this.resolution = options.resolution;
+    this.registries = options.registries;
+    this.mockState = options.mockState;
+    this.transformCache = options.transformCache;
+    this.environment = options.environment;
+    this.coreModule = options.coreModule;
+    this.executor = options.executor;
+    this.requireEsm = options.requireEsm;
+    this.testState = options.testState;
+    this.logFormattedReferenceError = options.logFormattedReferenceError;
   }
 
   requireModule<T = unknown>(
@@ -118,7 +117,9 @@ export class CjsLoader {
       return this.requireEsm<T>(modulePath);
     }
 
-    const moduleRegistry = this.registries.getActiveCjsRegistry(isInternal);
+    const moduleRegistry = isInternal
+      ? this.registries.getInternalCjsRegistry()
+      : this.registries.getActiveCjsRegistry();
 
     const module = moduleRegistry.get(modulePath);
     if (module) {
@@ -184,17 +185,17 @@ export class CjsLoader {
     } else if (path.extname(modulePath) === '.node') {
       localModule.exports = require(modulePath);
     } else {
-      // testState gates apply only to executing JS bodies — JSON/.node go
+      // testState gates apply only to executing JS bodies - JSON/.node go
       // through pure data parsing and don't run user code in the VM.
-      if (this.getTestState() === 'tornDown') {
-        this.logFormattedReferenceError(
+      if (
+        this.testState.bailIfTornDown(
           'You are trying to `require` a file after the Jest environment has been torn down.',
-        );
-        process.exitCode = 1;
+        )
+      ) {
         return;
       }
-      if (this.getTestState() === 'betweenTests' && !runtimeSupportsVmModules) {
-        throw new ReferenceError(
+      if (!runtimeSupportsVmModules) {
+        this.testState.throwIfBetweenTests(
           'You are trying to `require` a file outside of the scope of the test code.',
         );
       }

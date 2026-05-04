@@ -7,7 +7,8 @@
 
 import * as path from 'node:path';
 import type {Config} from '@jest/types';
-import type {MockMetadata} from 'jest-mock';
+import type {MockMetadata, ModuleMocker} from 'jest-mock';
+import type {ModuleRegistries} from './ModuleRegistries';
 import type {Resolution} from './Resolution';
 
 const NODE_MODULES = `${path.sep}node_modules${path.sep}`;
@@ -16,6 +17,8 @@ const unmockRegExpCache = new WeakMap<Config.ProjectConfig, RegExp>();
 
 const transitiveCacheKey = (from: string, moduleID: string) =>
   `${from}\0${moduleID}`;
+
+export type MockDecision = {shouldMock: boolean; moduleID: string};
 
 export class MockState {
   private readonly resolution: Resolution;
@@ -57,31 +60,50 @@ export class MockState {
     this.unmockList = unmock;
   }
 
-  shouldMockCjs(from: string, moduleName: string): boolean {
+  shouldMockCjs(from: string, moduleName: string): MockDecision {
     const moduleID = this.resolution.getCjsModuleId(
       this.virtualCjsMocks,
       from,
       moduleName,
     );
-    return this.decideSync(from, moduleName, moduleID, 'cjs');
+    return {
+      moduleID,
+      shouldMock: this.decideSync(from, moduleName, moduleID, 'cjs'),
+    };
   }
 
-  shouldMockEsmSync(from: string, moduleName: string): boolean {
+  shouldMockEsmSync(from: string, moduleName: string): MockDecision {
     const moduleID = this.resolution.getEsmModuleId(
       this.virtualEsmMocks,
       from,
       moduleName,
     );
-    return this.decideSync(from, moduleName, moduleID, 'esm');
+    return {
+      moduleID,
+      shouldMock: this.decideSync(from, moduleName, moduleID, 'esm'),
+    };
   }
 
-  async shouldMockEsmAsync(from: string, moduleName: string): Promise<boolean> {
+  async shouldMockEsmAsync(
+    from: string,
+    moduleName: string,
+  ): Promise<MockDecision> {
     const moduleID = await this.resolution.getEsmModuleIdAsync(
       this.virtualEsmMocks,
       from,
       moduleName,
     );
+    return {
+      moduleID,
+      shouldMock: await this.decideEsmAsync(from, moduleName, moduleID),
+    };
+  }
 
+  private async decideEsmAsync(
+    from: string,
+    moduleName: string,
+    moduleID: string,
+  ): Promise<boolean> {
     const explicit = this.explicitEsmMock.get(moduleID);
     if (explicit !== undefined) return explicit;
 
@@ -387,4 +409,56 @@ export class MockState {
     this.virtualEsmMocks.clear();
     this.onGenerateMockCallbacks.clear();
   }
+}
+
+export interface GenerateMockOptions {
+  resolution: Resolution;
+  mockState: MockState;
+  moduleMocker: ModuleMocker;
+  registries: ModuleRegistries;
+  // The real-module require used to populate metadata. Wired to
+  // `CjsLoader.requireModule` at construction time. Wraps in scratch
+  // registries to avoid polluting the real module/mock caches.
+  requireModule: (from: string, moduleName: string) => unknown;
+}
+
+export function generateMock<T>(
+  from: string,
+  moduleName: string,
+  options: GenerateMockOptions,
+): T {
+  const {resolution, mockState, moduleMocker, registries, requireModule} =
+    options;
+
+  const modulePath =
+    resolution.resolveCjsStub(from, moduleName) ||
+    resolution.resolveCjs(from, moduleName);
+
+  if (!mockState.hasMockMetadata(modulePath)) {
+    // This allows us to handle circular dependencies while generating an
+    // automock
+    mockState.setMockMetadata(modulePath, moduleMocker.getMetadata({}) || {});
+
+    // In order to avoid it being possible for automocking to potentially
+    // cause side-effects within the module environment, we need to execute
+    // the module in isolation. This could cause issues if the module being
+    // mocked has calls into side-effectful APIs on another module.
+    const moduleExports = registries.withScratchRegistries(() =>
+      requireModule(from, moduleName),
+    );
+
+    const mockMetadata = moduleMocker.getMetadata(moduleExports);
+    if (mockMetadata == null) {
+      throw new Error(
+        `Failed to get mock metadata: ${modulePath}\n\n` +
+          'See: https://jestjs.io/docs/manual-mocks#content',
+      );
+    }
+    mockState.setMockMetadata(modulePath, mockMetadata);
+  }
+
+  const moduleMock = moduleMocker.generateFromMetadata<T>(
+    mockState.getMockMetadata(modulePath)! as MockMetadata<T>,
+  );
+  return mockState.notifyMockGenerated(modulePath, moduleMock);
 }

@@ -35,17 +35,17 @@ import {CjsLoader} from './internals/CjsLoader';
 import {EsmLoader} from './internals/EsmLoader';
 import {FileCache} from './internals/FileCache';
 import {JestGlobals} from './internals/JestGlobals';
-import {MockState} from './internals/MockState';
+import {MockState, generateMock} from './internals/MockState';
 import {ModuleExecutor} from './internals/ModuleExecutor';
 import {ModuleRegistries} from './internals/ModuleRegistries';
 import {Resolution} from './internals/Resolution';
 import {TestMainModule} from './internals/TestMainModule';
+import {TestState} from './internals/TestState';
 import {
   TransformCache,
   type TransformOptions,
 } from './internals/TransformCache';
 import {V8CoverageCollector} from './internals/V8CoverageCollector';
-import {generateMock} from './internals/automock';
 import {CoreModuleProvider, RequireBuilder} from './internals/cjsRequire';
 import type {InitialModule, ModuleRegistry} from './internals/moduleTypes';
 import {runtimeSupportsVmModules} from './internals/nodeCapabilities';
@@ -53,7 +53,7 @@ import type {EnvironmentGlobals} from './internals/types';
 
 // Modules safe to require from the outside (not stateful, not prone to
 // realm errors) and slow enough that paying the worker-cache hit is worth
-// it. Internal context only — user `require()` from a test still goes
+// it. Internal context only - user `require()` from a test still goes
 // through the VM.
 const INTERNAL_MODULE_REQUIRE_OUTSIDE_OPTIMIZED_MODULES = new Set(['chalk']);
 
@@ -111,8 +111,7 @@ export default class Runtime {
   private readonly v8Coverage: V8CoverageCollector;
   private readonly coreModule: CoreModuleProvider;
   private readonly jestGlobals: JestGlobals;
-  private testState: 'loading' | 'inTest' | 'betweenTests' | 'tornDown' =
-    'loading';
+  private readonly testState: TestState;
   private readonly loggedReferenceErrors = new Set<string>();
 
   constructor(
@@ -136,6 +135,9 @@ export default class Runtime {
     );
     this._moduleMocker = this._environment.moduleMocker;
     this._testPath = testPath;
+    this.testState = new TestState(msg =>
+      this._logFormattedReferenceError(msg),
+    );
     this.transformCache = new TransformCache(
       transformer,
       this.fileCache,
@@ -152,13 +154,14 @@ export default class Runtime {
       config.extensionsToTreatAsEsm,
     );
     this.mockState = new MockState(this._resolution, config);
-    this.cjsExportsCache = new CjsExportsCache(
-      this._resolution,
-      this.fileCache,
-      modulePath => this.transformCache.getCachedSource(modulePath),
-      (from, moduleName) => this.requireModule(from, moduleName),
-      (from, moduleName) => this.requireModuleOrMock(from, moduleName),
-    );
+    this.cjsExportsCache = new CjsExportsCache({
+      fileCache: this.fileCache,
+      loadCoreReexport: (from, coreName) => this.requireModule(from, coreName),
+      loadNativeAddon: (from, modulePath) =>
+        this.requireModuleOrMock(from, modulePath),
+      resolution: this._resolution,
+      transformCache: this.transformCache,
+    });
     // Construction is a DAG: testMainModule → requireBuilder → {coreModule,
     // executor} → cjsLoader. The two lambdas inside `requireBuilder`'s deps
     // close over `cjsLoader` (built last) and `this.requireModuleOrMock`,
@@ -184,7 +187,6 @@ export default class Runtime {
       config,
       environment: this._environment,
       generateMock: (from, moduleName) => this._generateMock(from, moduleName),
-      getTestState: () => this.testState,
       globalConfig,
       isolateModules: fn => this.isolateModules(fn),
       isolateModulesAsync: fn => this.isolateModulesAsync(fn),
@@ -200,21 +202,21 @@ export default class Runtime {
         this.setMock(from, moduleName, mockFactory, options),
       setModuleMock: (from, moduleName, mockFactory, options) =>
         this.setModuleMock(from, moduleName, mockFactory, options),
+      testState: this.testState,
     });
     this.esmLoader = new EsmLoader({
       cjsExportsCache: this.cjsExportsCache,
       coreModule: this.coreModule,
       environment: this._environment,
       fileCache: this.fileCache,
-      getTestState: () => this.testState,
       jestGlobals: this.jestGlobals,
-      logFormattedReferenceError: msg => this._logFormattedReferenceError(msg),
       mockState: this.mockState,
       registries: this.registries,
       requireModuleOrMock: (from, moduleName) =>
         this.requireModuleOrMock(from, moduleName),
       resolution: this._resolution,
       shouldLoadAsEsm: modulePath => this.unstable_shouldLoadAsEsm(modulePath),
+      testState: this.testState,
       transformCache: this.transformCache,
     });
     this.executor = new ModuleExecutor({
@@ -233,13 +235,13 @@ export default class Runtime {
       coreModule: this.coreModule,
       environment: this._environment,
       executor: this.executor,
-      getTestState: () => this.testState,
       logFormattedReferenceError: msg => this._logFormattedReferenceError(msg),
       mockState: this.mockState,
       registries: this.registries,
       requireEsm: <T>(modulePath: string) =>
         this.esmLoader.requireEsmModule<T>(modulePath),
       resolution: this._resolution,
+      testState: this.testState,
       transformCache: this.transformCache,
     });
 
@@ -397,8 +399,18 @@ export default class Runtime {
   }
 
   requireMock<T = unknown>(from: string, moduleName: string): T {
-    const moduleID = this.mockState.getCjsModuleId(from, moduleName);
+    return this._requireMockWithId<T>(
+      from,
+      moduleName,
+      this.mockState.getCjsModuleId(from, moduleName),
+    );
+  }
 
+  private _requireMockWithId<T>(
+    from: string,
+    moduleName: string,
+    moduleID: string,
+  ): T {
     if (this.registries.hasMock(moduleID)) {
       return this.registries.getMock(moduleID) as T;
     }
@@ -450,11 +462,11 @@ export default class Runtime {
   }
 
   requireModuleOrMock<T = unknown>(from: string, moduleName: string): T {
-    if (this.testState === 'tornDown') {
-      this._logFormattedReferenceError(
+    if (
+      this.testState.bailIfTornDown(
         'You are trying to `require` a file after the Jest environment has been torn down.',
-      );
-      process.exitCode = 1;
+      )
+    ) {
       // @ts-expect-error: exiting early
       return;
     }
@@ -466,11 +478,14 @@ export default class Runtime {
     }
 
     try {
-      if (this.mockState.shouldMockCjs(from, moduleName)) {
-        return this.requireMock<T>(from, moduleName);
-      } else {
-        return this.requireModule<T>(from, moduleName);
+      const {shouldMock, moduleID} = this.mockState.shouldMockCjs(
+        from,
+        moduleName,
+      );
+      if (shouldMock) {
+        return this._requireMockWithId<T>(from, moduleName, moduleID);
       }
+      return this.requireModule<T>(from, moduleName);
     } catch (error) {
       const moduleNotFound = Resolver.tryCastModuleNotFoundError(error);
       if (moduleNotFound) {
@@ -524,20 +539,7 @@ export default class Runtime {
 
     if (this._environment) {
       if (this._environment.global) {
-        const envGlobal = this._environment.global;
-        for (const key of Object.keys(envGlobal) as Array<
-          keyof typeof globalThis
-        >) {
-          const globalMock = envGlobal[key];
-          if (
-            ((typeof globalMock === 'object' && globalMock !== null) ||
-              typeof globalMock === 'function') &&
-            '_isMockFunction' in globalMock &&
-            globalMock._isMockFunction === true
-          ) {
-            globalMock.mockClear();
-          }
-        }
+        this._moduleMocker.clearMocksOnScope(this._environment.global);
       }
 
       if (this._environment.fakeTimers) {
@@ -597,11 +599,11 @@ export default class Runtime {
   }
 
   enterTestCode(): void {
-    this.testState = 'inTest';
+    this.testState.enterTestCode();
   }
 
   leaveTestCode(): void {
-    this.testState = 'betweenTests';
+    this.testState.leaveTestCode();
   }
 
   teardown(): void {
@@ -618,8 +620,9 @@ export default class Runtime {
 
     this.v8Coverage.reset();
     this.coreModule.reset();
+    this.loggedReferenceErrors.clear();
 
-    this.testState = 'tornDown';
+    this.testState.teardown();
   }
 
   private _generateMock<T>(from: string, moduleName: string): T {

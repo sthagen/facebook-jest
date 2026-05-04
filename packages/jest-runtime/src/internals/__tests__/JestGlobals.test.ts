@@ -14,24 +14,21 @@ import {
 import type {JestEnvironment} from '@jest/environment';
 import type {LegacyFakeTimers, ModernFakeTimers} from '@jest/fake-timers';
 import type {ModuleMocker} from 'jest-mock';
-import {
-  JestGlobals,
-  type JestGlobalsDeps,
-  type TestState,
-} from '../JestGlobals';
+import {JestGlobals, type JestGlobalsOptions} from '../JestGlobals';
 import type {MockState} from '../MockState';
 import {evaluateSyntheticModule} from '../syntheticBuilders';
+import {TestState} from '../TestState';
 import type {EnvironmentGlobals} from '../types';
 
 type Stubs = {
   mockState: jest.Mocked<MockState>;
   moduleMocker: jest.Mocked<ModuleMocker>;
   environment: JestEnvironment;
-  setMock: jest.MockedFunction<JestGlobalsDeps['setMock']>;
-  setModuleMock: jest.MockedFunction<JestGlobalsDeps['setModuleMock']>;
-  generateMock: jest.MockedFunction<JestGlobalsDeps['generateMock']>;
-  requireActual: jest.MockedFunction<JestGlobalsDeps['requireActual']>;
-  requireMock: jest.MockedFunction<JestGlobalsDeps['requireMock']>;
+  setMock: jest.MockedFunction<JestGlobalsOptions['setMock']>;
+  setModuleMock: jest.MockedFunction<JestGlobalsOptions['setModuleMock']>;
+  generateMock: jest.MockedFunction<JestGlobalsOptions['generateMock']>;
+  requireActual: jest.MockedFunction<JestGlobalsOptions['requireActual']>;
+  requireMock: jest.MockedFunction<JestGlobalsOptions['requireMock']>;
   resetModules: jest.MockedFunction<() => void>;
   isolateModules: jest.MockedFunction<(fn: () => void) => void>;
   isolateModulesAsync: jest.MockedFunction<
@@ -40,7 +37,7 @@ type Stubs = {
   clearAllMocks: jest.MockedFunction<() => void>;
   resetAllMocks: jest.MockedFunction<() => void>;
   restoreAllMocks: jest.MockedFunction<() => void>;
-  getTestState: jest.MockedFunction<() => TestState>;
+  testState: TestState;
   logFormattedReferenceError: jest.MockedFunction<(msg: string) => void>;
 };
 
@@ -53,6 +50,7 @@ const makeFakeTimers = () =>
 
 function makeJestGlobals(overrides: Partial<Stubs> = {}) {
   const fakeTimersModern = makeFakeTimers();
+  const logFormattedReferenceError = jest.fn();
   const envGlobals: Partial<EnvironmentGlobals> = {
     describe: 'describe-marker' as never,
     expect: 'expect-marker' as never,
@@ -66,10 +64,9 @@ function makeJestGlobals(overrides: Partial<Stubs> = {}) {
       global: envGlobals,
     } as unknown as JestEnvironment,
     generateMock: jest.fn() as any,
-    getTestState: jest.fn(() => 'inTest' as const),
     isolateModules: jest.fn(),
     isolateModulesAsync: jest.fn() as any,
-    logFormattedReferenceError: jest.fn(),
+    logFormattedReferenceError,
     mockState: {
       addOnGenerateMock: jest.fn(),
       deepUnmock: jest.fn(),
@@ -93,6 +90,7 @@ function makeJestGlobals(overrides: Partial<Stubs> = {}) {
     restoreAllMocks: jest.fn(),
     setMock: jest.fn(),
     setModuleMock: jest.fn(),
+    testState: new TestState(logFormattedReferenceError),
     ...overrides,
   };
   const jestGlobals = new JestGlobals({
@@ -100,7 +98,6 @@ function makeJestGlobals(overrides: Partial<Stubs> = {}) {
     config: makeProjectConfig(),
     environment: stubs.environment,
     generateMock: stubs.generateMock,
-    getTestState: stubs.getTestState,
     globalConfig: makeGlobalConfig(),
     isolateModules: stubs.isolateModules,
     isolateModulesAsync: stubs.isolateModulesAsync,
@@ -114,6 +111,7 @@ function makeJestGlobals(overrides: Partial<Stubs> = {}) {
     restoreAllMocks: stubs.restoreAllMocks,
     setMock: stubs.setMock,
     setModuleMock: stubs.setModuleMock,
+    testState: stubs.testState,
   });
   return {fakeTimersModern, jestGlobals, stubs};
 }
@@ -158,7 +156,7 @@ describe('JestGlobals.envGlobals', () => {
     jestGlobals.setEnvGlobalsOverride(override);
     const first = jestGlobals.envGlobals();
     expect(first.describe).toBe('over-describe');
-    // Mutating the returned object must not affect subsequent reads — the
+    // Mutating the returned object must not affect subsequent reads - the
     // current Runtime contract is `{...this.jestGlobals}` on each access.
     (first as unknown as Record<string, unknown>).describe = 'mutated';
     const second = jestGlobals.envGlobals();
@@ -186,7 +184,7 @@ describe('JestGlobals.esmGlobalsModule', () => {
   });
 });
 
-describe('JestGlobals — fake-timers state', () => {
+describe('JestGlobals - fake-timers state', () => {
   test('useFakeTimers points fakeTimersImpl at the modern impl by default', () => {
     const {fakeTimersModern, jestGlobals} = makeJestGlobals();
     const jestObj = jestGlobals.jestObjectFor('/file.js');
@@ -194,22 +192,19 @@ describe('JestGlobals — fake-timers state', () => {
     expect(fakeTimersModern.useFakeTimers).toHaveBeenCalled();
   });
 
-  test('jest.now() throws when testState is `betweenTests`', () => {
-    const {jestGlobals, stubs} = makeJestGlobals({
-      getTestState: jest.fn(() => 'betweenTests' as const),
-    });
+  test('jest.now() throws when testState reports betweenTests', () => {
+    const {jestGlobals, stubs} = makeJestGlobals();
+    stubs.testState.leaveTestCode();
     const jestObj = jestGlobals.jestObjectFor('/file.js');
     expect(() => jestObj.now()).toThrow('outside of the scope of the test');
-    void stubs;
   });
 
-  test('jest.now() logs and sets exitCode when testState is `tornDown`', () => {
+  test('jest.now() logs and sets exitCode when testState reports tornDown', () => {
     const original = process.exitCode;
     process.exitCode = 0;
     try {
-      const {jestGlobals, stubs} = makeJestGlobals({
-        getTestState: jest.fn(() => 'tornDown' as const),
-      });
+      const {jestGlobals, stubs} = makeJestGlobals();
+      stubs.testState.teardown();
       const jestObj = jestGlobals.jestObjectFor('/file.js');
       jestObj.now();
       expect(stubs.logFormattedReferenceError).toHaveBeenCalledWith(
@@ -222,7 +217,7 @@ describe('JestGlobals — fake-timers state', () => {
   });
 });
 
-describe('JestGlobals — override-seam bridges', () => {
+describe('JestGlobals - override-seam bridges', () => {
   test('jest.requireActual delegates to the bridge with the captured `from`', () => {
     const {jestGlobals, stubs} = makeJestGlobals();
     const jestObj = jestGlobals.jestObjectFor('/file.js');

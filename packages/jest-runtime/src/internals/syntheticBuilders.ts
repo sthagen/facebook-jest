@@ -13,7 +13,7 @@ import type {CjsExportsCache} from './CjsExportsCache';
 // Build a SyntheticModule from a plain exports record. The set of names and
 // the value *references* are snapshotted at construction time, so later
 // `exportsObject[k] = v` re-assignments or key add/delete won't leak into
-// `evaluate()`. This is a shallow snapshot — mutating an exported object
+// `evaluate()`. This is a shallow snapshot - mutating an exported object
 // (`exportsObject.x.foo = ...`) is still observable through `setExport`.
 export function syntheticFromExports(
   identifier: string,
@@ -112,7 +112,7 @@ export function buildCjsAsEsmSyntheticModule(
   cjsExportsCache: Pick<CjsExportsCache, 'getExportsOf'>,
 ): SyntheticModule {
   const cjs = requireModuleOrMock(from, modulePath);
-  const parsedExports = cjsExportsCache.getExportsOf(modulePath);
+  const parsedExports = cjsExportsCache.getExportsOf(from, modulePath);
 
   // CJS modules can legally set `module.exports` to `null` or a primitive.
   const cjsRecord =

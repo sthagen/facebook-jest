@@ -12,6 +12,7 @@ import type {expect} from '@jest/globals';
 import type {Config} from '@jest/types';
 import type {ModuleMocker} from 'jest-mock';
 import type {MockState} from './MockState';
+import type {TestState} from './TestState';
 import {syntheticFromExports} from './syntheticBuilders';
 import type {EnvironmentGlobals, JestGlobalsWithJest} from './types';
 
@@ -21,9 +22,7 @@ const waitBeforeRetrySymbol = Symbol.for('WAIT_BEFORE_RETRY');
 const retryImmediatelySymbol = Symbol.for('RETRY_IMMEDIATELY');
 const logErrorsBeforeRetrySymbol = Symbol.for('LOG_ERRORS_BEFORE_RETRY');
 
-export type TestState = 'loading' | 'inTest' | 'betweenTests' | 'tornDown';
-
-export interface JestGlobalsDeps {
+export interface JestGlobalsOptions {
   config: Config.ProjectConfig;
   globalConfig: Config.GlobalConfig;
   environment: JestEnvironment;
@@ -50,7 +49,7 @@ export interface JestGlobalsDeps {
   clearAllMocks: () => void;
   resetAllMocks: () => void;
   restoreAllMocks: () => void;
-  getTestState: () => TestState;
+  testState: TestState;
   logFormattedReferenceError: (msg: string) => void;
 }
 
@@ -60,11 +59,11 @@ export class JestGlobals {
   private readonly environment: JestEnvironment;
   private readonly mockState: MockState;
   private readonly moduleMocker: ModuleMocker;
-  private readonly setMockBridge: JestGlobalsDeps['setMock'];
-  private readonly setModuleMockBridge: JestGlobalsDeps['setModuleMock'];
-  private readonly generateMock: JestGlobalsDeps['generateMock'];
-  private readonly requireActualBridge: JestGlobalsDeps['requireActual'];
-  private readonly requireMockBridge: JestGlobalsDeps['requireMock'];
+  private readonly setMockBridge: JestGlobalsOptions['setMock'];
+  private readonly setModuleMockBridge: JestGlobalsOptions['setModuleMock'];
+  private readonly generateMock: JestGlobalsOptions['generateMock'];
+  private readonly requireActualBridge: JestGlobalsOptions['requireActual'];
+  private readonly requireMockBridge: JestGlobalsOptions['requireMock'];
   private readonly resetModulesBridge: () => void;
   private readonly isolateModulesBridge: (fn: () => void) => void;
   private readonly isolateModulesAsyncBridge: (
@@ -73,32 +72,33 @@ export class JestGlobals {
   private readonly clearAllMocksBridge: () => void;
   private readonly resetAllMocksBridge: () => void;
   private readonly restoreAllMocksBridge: () => void;
-  private readonly getTestState: () => TestState;
+  private readonly testState: TestState;
   private readonly logFormattedReferenceError: (msg: string) => void;
 
   private readonly cache = new Map<string, Jest>();
   private fakeTimersImpl: LegacyFakeTimers<unknown> | ModernFakeTimers | null;
   private envGlobalsOverride?: EnvironmentGlobals;
+  private cachedEnvGlobals?: EnvironmentGlobals;
 
-  constructor(deps: JestGlobalsDeps) {
-    this.config = deps.config;
-    this.globalConfig = deps.globalConfig;
-    this.environment = deps.environment;
-    this.mockState = deps.mockState;
-    this.moduleMocker = deps.moduleMocker;
-    this.setMockBridge = deps.setMock;
-    this.setModuleMockBridge = deps.setModuleMock;
-    this.generateMock = deps.generateMock;
-    this.requireActualBridge = deps.requireActual;
-    this.requireMockBridge = deps.requireMock;
-    this.resetModulesBridge = deps.resetModules;
-    this.isolateModulesBridge = deps.isolateModules;
-    this.isolateModulesAsyncBridge = deps.isolateModulesAsync;
-    this.clearAllMocksBridge = deps.clearAllMocks;
-    this.resetAllMocksBridge = deps.resetAllMocks;
-    this.restoreAllMocksBridge = deps.restoreAllMocks;
-    this.getTestState = deps.getTestState;
-    this.logFormattedReferenceError = deps.logFormattedReferenceError;
+  constructor(options: JestGlobalsOptions) {
+    this.config = options.config;
+    this.globalConfig = options.globalConfig;
+    this.environment = options.environment;
+    this.mockState = options.mockState;
+    this.moduleMocker = options.moduleMocker;
+    this.setMockBridge = options.setMock;
+    this.setModuleMockBridge = options.setModuleMock;
+    this.generateMock = options.generateMock;
+    this.requireActualBridge = options.requireActual;
+    this.requireMockBridge = options.requireMock;
+    this.resetModulesBridge = options.resetModules;
+    this.isolateModulesBridge = options.isolateModules;
+    this.isolateModulesAsyncBridge = options.isolateModulesAsync;
+    this.clearAllMocksBridge = options.clearAllMocks;
+    this.resetAllMocksBridge = options.resetAllMocks;
+    this.restoreAllMocksBridge = options.restoreAllMocks;
+    this.testState = options.testState;
+    this.logFormattedReferenceError = options.logFormattedReferenceError;
     this.fakeTimersImpl = this.config.fakeTimers.legacyFakeTimers
       ? this.environment.fakeTimers
       : this.environment.fakeTimersModern;
@@ -116,21 +116,26 @@ export class JestGlobals {
     if (this.envGlobalsOverride) {
       return {...this.envGlobalsOverride};
     }
-    return {
-      afterAll: this.environment.global.afterAll,
-      afterEach: this.environment.global.afterEach,
-      beforeAll: this.environment.global.beforeAll,
-      beforeEach: this.environment.global.beforeEach,
-      describe: this.environment.global.describe,
-      expect: this.environment.global.expect as typeof expect,
-      fdescribe: this.environment.global.fdescribe,
-      fit: this.environment.global.fit,
-      it: this.environment.global.it,
-      test: this.environment.global.test,
-      xdescribe: this.environment.global.xdescribe,
-      xit: this.environment.global.xit,
-      xtest: this.environment.global.xtest,
-    };
+    let cached = this.cachedEnvGlobals;
+    if (cached === undefined) {
+      cached = {
+        afterAll: this.environment.global.afterAll,
+        afterEach: this.environment.global.afterEach,
+        beforeAll: this.environment.global.beforeAll,
+        beforeEach: this.environment.global.beforeEach,
+        describe: this.environment.global.describe,
+        expect: this.environment.global.expect as typeof expect,
+        fdescribe: this.environment.global.fdescribe,
+        fit: this.environment.global.fit,
+        it: this.environment.global.it,
+        test: this.environment.global.test,
+        xdescribe: this.environment.global.xdescribe,
+        xit: this.environment.global.xit,
+        xtest: this.environment.global.xtest,
+      };
+      this.cachedEnvGlobals = cached;
+    }
+    return {...cached};
   }
 
   cjsGlobals(from: string): JestGlobalsWithJest {
@@ -223,7 +228,7 @@ export class JestGlobals {
     };
     const _getFakeTimers = () => {
       if (
-        this.getTestState() === 'tornDown' ||
+        this.testState.isTornDown() ||
         !(this.environment.fakeTimers || this.environment.fakeTimersModern)
       ) {
         this.logFormattedReferenceError(
@@ -231,11 +236,9 @@ export class JestGlobals {
         );
         process.exitCode = 1;
       }
-      if (this.getTestState() === 'betweenTests') {
-        throw new ReferenceError(
-          'You are trying to access a property or method of the Jest environment outside of the scope of the test code.',
-        );
-      }
+      this.testState.throwIfBetweenTests(
+        'You are trying to access a property or method of the Jest environment outside of the scope of the test code.',
+      );
 
       return this.fakeTimersImpl!;
     };
@@ -349,7 +352,7 @@ export class JestGlobals {
       },
       getSeed: () => this.globalConfig.seed,
       getTimerCount: () => _getFakeTimers().getTimerCount(),
-      isEnvironmentTornDown: () => this.getTestState() === 'tornDown',
+      isEnvironmentTornDown: () => this.testState.isTornDown(),
       isMockFunction: this.moduleMocker.isMockFunction,
       isolateModules,
       isolateModulesAsync,

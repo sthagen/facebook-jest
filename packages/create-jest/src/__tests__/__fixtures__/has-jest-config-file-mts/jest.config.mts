@@ -5,6 +5,4 @@
  * LICENSE file in the root directory of this source tree.
  */
 
-module.exports = {
-  plugins: ['@babel/plugin-transform-explicit-resource-management'],
-};
+export default {};

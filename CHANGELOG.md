@@ -4,20 +4,27 @@
 
 - `[babel-jest]` Support collecting coverage from `.mts`, `.cts` (and other) files ([#15994](https://github.com/jestjs/jest/pull/15994))
 - `[jest-circus, jest-cli, jest-config, jest-core, jest-jasmine2, jest-types]` Add `--collect-tests` flag to discover and list tests without executing them ([#16006](https://github.com/jestjs/jest/pull/16006))
+- `[jest-config, jest-runner, jest-worker]` Add `workerGracefulExitTimeout` config option to control how long workers are given to exit before being force-killed ([#15984](https://github.com/jestjs/jest/pull/15984))
 - `[jest-config]` Add support for `jest.config.mts` as a valid configuration file ([#16005](https://github.com/jestjs/jest/pull/16005))
+- `[@jest/fake-timers]` Accept `Temporal.Duration` in `jest.advanceTimersByTime()` and `jest.advanceTimersByTimeAsync()` ([#16128](https://github.com/jestjs/jest/pull/16128))
+- `[@jest/fake-timers]` Accept `Temporal.Instant` and `Temporal.ZonedDateTime` in `jest.setSystemTime()` and `useFakeTimers({now})` ([#16128](https://github.com/jestjs/jest/pull/16128))
 - `[jest-mock]` Add `clearMocksOnScope(scope)` on `ModuleMocker` for clearing every mock function exposed on a scope object ([#16088](https://github.com/jestjs/jest/pull/16088))
 - `[jest-resolve]` Add `canResolveSync()` on `Resolver` so callers can detect when a user-configured resolver only exports an `async` hook ([#16064](https://github.com/jestjs/jest/pull/16064))
 - `[jest-runtime]` Use synchronous `evaluate()` for ES modules without top-level `await` on Node versions that support it (v24.9+), and prefer the synchronous transform path when a sync transformer is configured ([#16062](https://github.com/jestjs/jest/pull/16062))
 - `[jest-runtime]` Support `require()` of ES modules on Node v24.9+ ([#16074](https://github.com/jestjs/jest/pull/16074))
+- `[jest-runtime]` Validate TC39 import attributes (`with { type: 'json' }`) on ESM imports ([#16127](https://github.com/jestjs/jest/pull/16127))
 - `[@jest/transform]` Add `canTransformSync(filename)` on `ScriptTransformer` so callers can pick the sync vs async transform path ([#16062](https://github.com/jestjs/jest/pull/16062))
 - `[jest-util]` Add `isError` helper ([#16076](https://github.com/jestjs/jest/pull/16076))
+- `[pretty-format]` Support React 19 ([#16123](https://github.com/jestjs/jest/pull/16123))
 
 ### Fixes
 
-- `[expect-utils]` Fix `toStrictEqual` failing on `structuredClone` results due to cross-realm constructor mismatch ([#14011](https://github.com/jestjs/jest/issues/14011))
+- `[expect-utils]` Fix `toStrictEqual` failing on `structuredClone` results due to cross-realm constructor mismatch ([#15959](https://github.com/jestjs/jest/pull/15959))
+- `[@jest/expect-utils]` Prevent `toMatchObject`/subset matching from throwing when encountering exotic iterables ([#15952](https://github.com/jestjs/jest/pull/15952))
 - `[fake-timers]` Convert `Date` to milliseconds before passing to `@sinonjs/fake-timers` ([#16029](https://github.com/jestjs/jest/pull/16029))
 - `[jest-circus]` Prevent crash when `asyncError` is undefined for non-Error throws ([#16003](https://github.com/jestjs/jest/pull/16003))
 - `[jest-circus, jest-jasmine2]` Include `Error.cause` in JSON `failureMessages` output ([#15949](https://github.com/jestjs/jest/issues/15949))
+- `[jest-config]` Fix preset path resolution on Windows when the preset uses subpath `exports` ([#15961](https://github.com/jestjs/jest/pull/15961))
 - `[jest-environment-node]` Fix `--localstorage-file` warning on Node 25+ ([#16086](https://github.com/jestjs/jest/pull/16086))
 - `[jest-runtime]` Improve CJS-from-ESM interop: `__esModule`/Babel default unwrap, broader named-export coverage, and shared CJS singleton across importers ([#16050](https://github.com/jestjs/jest/pull/16050))
 - `[jest-runtime]` Load `.js` files with ESM syntax but no `"type":"module"` marker as native ESM ([#16050](https://github.com/jestjs/jest/pull/16050))
@@ -318,4 +325,4 @@
 
 ## Older Changelog Entries
 
-For newer CHANGELOG entries see [`CHANGELOG_PRE_v30.md`](CHANGELOG_PRE_v30.md).
+For older CHANGELOG entries see [`CHANGELOG_PRE_v30.md`](CHANGELOG_PRE_v30.md).

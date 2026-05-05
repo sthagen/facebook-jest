@@ -61,12 +61,13 @@ export type FakeTimersConfig = {
    */
   doNotFake?: Array<FakeableAPI>;
   /**
-   * Sets current system time to be used by fake timers, in milliseconds.
+   * Sets current system time to be used by fake timers. Accepts a millisecond
+   * timestamp, a `Date`, a `Temporal.Instant`, or a `Temporal.ZonedDateTime`.
    *
    * @defaultValue
    * The default is `Date.now()`.
    */
-  now?: number | Date;
+  now?: number | Date | {epochMilliseconds: number};
   /**
    * The maximum number of recursive timers that will be run when calling
    * `jest.runAllTimers()`.
@@ -99,7 +100,10 @@ export type LegacyFakeTimersConfig = {
 type FakeTimers = GlobalFakeTimersConfig &
   (
     | (FakeTimersConfig & {
-        now?: Exclude<FakeTimersConfig['now'], Date>;
+        now?: Exclude<
+          FakeTimersConfig['now'],
+          Date | {epochMilliseconds: number}
+        >;
       })
     | LegacyFakeTimersConfig
   );
@@ -211,6 +215,7 @@ export type DefaultOptions = {
   watch: boolean;
   watchPathIgnorePatterns: Array<string>;
   watchman: boolean;
+  workerGracefulExitTimeout: number;
   workerThreads: boolean;
 };
 
@@ -322,6 +327,7 @@ export type GlobalConfig = {
     path: string;
     config: Record<string, unknown>;
   }> | null;
+  workerGracefulExitTimeout?: number;
   workerIdleMemoryLimit?: number;
   // TODO: make non-optional in Jest 30
   workerThreads?: boolean;
@@ -492,6 +498,7 @@ export type Argv = Arguments<
     watchAll: boolean;
     watchman: boolean;
     watchPathIgnorePatterns: Array<string>;
+    workerGracefulExitTimeout: number;
     workerIdleMemoryLimit: number | string;
     workerThreads: boolean;
   }>

@@ -1,5 +1,10 @@
 ## main
 
+### Features
+
+- `[@jest/expect-utils, jest-mock]` Add `mockFn.whenCalledWith(...args)` for configuring return values per argument list, with first-class asymmetric-matcher support ([#16053](https://github.com/jestjs/jest/pull/16053))
+- `[@jest/expect-utils]` Export `AsymmetricMatcher` and `FunctionParameters` types (previously private to `expect`) ([#16053](https://github.com/jestjs/jest/pull/16053))
+
 ### Fixes
 
 - `[expect, jest-message-util, jest-pattern, jest-regex-util, jest-util]` Revert `node:` protocol imports to restore webpack/browser-bundle compatibility ([#16167](https://github.com/jestjs/jest/pull/16167))
@@ -9,6 +14,7 @@
 
 ### Chore & Maintenance
 
+- `[jest-haste-map]` Refactor massive class into multiple files ([#16180](https://github.com/jestjs/jest/pull/16180))
 - `[jest-runtime]` Avoid magical `null` value in ESM loader ([#16160](https://github.com/jestjs/jest/pull/16160))
 
 ## 30.4.2

@@ -613,14 +613,29 @@ const config = defineConfig(
     },
   },
   {
+    // These packages are consumed by webpack/browser bundles (see CHANGELOG #16167).
+    // They must not use the `node:` protocol — it is not available in all bundler targets.
     files: [
+      'packages/expect/src/**/*',
+      'packages/expect-utils/src/**/*',
+      'packages/jest-matcher-utils/src/**/*',
       'packages/jest-message-util/src/**/*',
       'packages/jest-pattern/src/**/*',
       'packages/jest-regex-util/src/**/*',
       'packages/jest-util/src/**/*',
     ],
     rules: {
+      // Don't require the node: prefix (would break browser bundling).
       'unicorn/prefer-node-protocol': 'off',
+      // Actively ban node: protocol imports in case a contributor adds one.
+      'no-restricted-syntax': [
+        'error',
+        {
+          message:
+            'Use the bare module name (e.g. "path") instead of the "node:" protocol — this package must be browser-bundle compatible.',
+          selector: 'ImportDeclaration[source.value=/^node:/]',
+        },
+      ],
     },
   },
   {
@@ -802,7 +817,14 @@ const config = defineConfig(
       'unicorn/prefer-number-properties': 'off',
     },
   },
-
+  // Instruction files for AI agents
+  {
+    files: ['**/CLAUDE.md/**', '.github/copilot-instructions.md/**'],
+    rules: {
+      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off',
+    },
+  },
   {
     ignores: [
       '!.*',
